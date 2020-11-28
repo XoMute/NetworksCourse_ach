@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import org.jetbrains.skija.Font
 import org.jetbrains.skija.Typeface
+import ui.core.DrawPageContext
 
 interface Element {
     val id: Int
@@ -16,7 +17,7 @@ interface Element {
     val connectable: Boolean
 
     fun collides(offset: Offset): Boolean
-    fun draw(scope: DrawScope)
+    fun draw(scope: DrawScope, context: DrawPageContext)
 }
 
 abstract class ConnectableElement : Element {
@@ -52,5 +53,5 @@ abstract class ConnectableElement : Element {
 }
 
 enum class ElementType {
-    WORKSTATION, COMMUNICATION_NODE, CONNECTION
+    WORKSTATION, COMMUNICATION_NODE, LINE
 }

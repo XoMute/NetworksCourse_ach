@@ -1,4 +1,4 @@
-package ui.elements
+package ui.elements.compose
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

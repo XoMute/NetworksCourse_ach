@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import ui.core.DrawPageContext
-import ui.elements.ControlPanelElement
+import ui.elements.compose.ControlPanelElement
 import ui.elements.base.ElementType
 
 @Composable
@@ -35,8 +35,14 @@ fun ControlPanel(context: DrawPageContext) {
             Spacer(modifier = Modifier
                     .width(32.dp))
             ControlPanelElement("line.png") {
-                context.selectedTypeState.value = ElementType.CONNECTION
+                context.selectedTypeState.value = ElementType.LINE
             }
+            Spacer(modifier = Modifier
+                    .width(100.dp))
+           /* Button(onClick = {
+
+            }, modifier = Modifier
+                    .width(20.dp))*/
         }
     }
 }

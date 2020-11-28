@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import ui.core.DrawPageContext
+import ui.elements.base.ConnectableElement
 import ui.elements.base.ElementType
 
 @Composable
@@ -25,14 +26,14 @@ fun DrawCanvas(modifier: Modifier, context: DrawPageContext) = Canvas(modifier =
             }
         })*/
 ) {
-    context.elementsState.value.forEach { it.draw(this) }
+    context.elementsState.value.forEach { it.draw(this, context) }
     context.drawLine(this)
 }
 
 fun DrawPageContext.drawLine(scope: DrawScope) {
-    if (selectedTypeState.value == ElementType.CONNECTION && connectingElements) {
-        selectedElement.value!!.let {
-            scope.drawLine(Color.Black, it.pos, mousePos, 5f)
+    if (selectedTypeState.value == ElementType.LINE && connectingElementsState.value) {
+        selectedElementState.value!!.let {
+            scope.drawLine(Color.Black, (it as ConnectableElement).center, mousePosState.value, 5f)
         }
     }
 }
