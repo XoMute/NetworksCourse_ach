@@ -4,8 +4,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import ui.elements.CommunicationNodeElement
+import ui.elements.LineElement
 import ui.elements.WorkstationElement
 import ui.elements.base.ConnectableElement
+import ui.elements.base.DrawableElement
 import ui.elements.base.Element
 import ui.elements.base.ElementType
 
@@ -19,7 +21,7 @@ class DrawPageContext {
     var mousePosState: MutableState<Offset> = mutableStateOf(Offset.Zero)
 
     fun onMouseMove(pos: Offset): Boolean {
-        mousePosState.value = pos/*.copy()*/
+        mousePosState.value = pos
         if (selectedTypeState.value == ElementType.LINE && connectingElementsState.value) {
         } else {
             // todo: draw selected type under mouse
@@ -28,7 +30,7 @@ class DrawPageContext {
     }
 
     fun click(pos: Offset) {
-        elementsState.value.find { it.collides(pos) }?.let {
+        elementsState.value.find { (it as DrawableElement).collides(pos) }?.let {
             println("Clicked on element ${it.id}")
             when (selectedTypeState.value) {
                 ElementType.LINE -> {
@@ -62,6 +64,9 @@ class DrawPageContext {
     private fun createConnection(start: ConnectableElement, end: ConnectableElement) {
         start.connectionIds.value = start.connectionIds.value.apply { add(end.id) }.toMutableSet()
         end.connectionIds.value = end.connectionIds.value.apply { add(start.id) }.toMutableSet()
+        elementsState.value = elementsState.value.toMutableList().apply {
+            add(LineElement(idGenerator++, start as DrawableElement, end as DrawableElement))// todo: remove id from line (??)
+        }
         println("Connected ${start.id} and ${end.id}")
         connectingElementsState.value = false
         selectedElementState.value = null

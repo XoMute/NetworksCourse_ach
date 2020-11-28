@@ -12,9 +12,11 @@ import androidx.compose.ui.graphics.imageFromResource
 import androidx.compose.ui.unit.IntOffset
 import ui.core.DrawPageContext
 import ui.elements.base.ConnectableElement
+import ui.elements.base.DrawableElement
+import ui.elements.base.DrawableImageElement
 import ui.elements.base.ElementType
 
-class WorkstationElement : ConnectableElement {
+class WorkstationElement : ConnectableElement, DrawableImageElement {
 
     override val id: Int
     override var pos: Offset
@@ -32,16 +34,5 @@ class WorkstationElement : ConnectableElement {
     override val width: Int = 64
     override val height: Int = 64
 
-    private val image: ImageBitmap = imageFromResource("workstation.png")
-
-    override fun draw(scope: DrawScope, context: DrawPageContext) {
-        connectionIds.value.forEach { id ->
-            scope.drawLine(Color.Black, center, (context.elementsState.value.find { it.id == id }!! as ConnectableElement).center,5f)
-        }
-        scope.drawImage(image, dstOffset = IntOffset(pos.x.toInt(), pos.y.toInt()))
-        scope.drawIntoCanvas { canvas ->
-            (canvas as DesktopCanvas).skija.drawString(id.toString(), center.x, center.y - height * 0.6f, skiaFont, paint.asFrameworkPaint())
-        }
-    }
-
+    override val image: ImageBitmap = imageFromResource("workstation.png")
 }
