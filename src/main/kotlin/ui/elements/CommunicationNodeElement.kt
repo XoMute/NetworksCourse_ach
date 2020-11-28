@@ -1,5 +1,7 @@
 package ui.elements
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.DesktopCanvas
 import androidx.compose.ui.graphics.ImageBitmap
@@ -16,8 +18,7 @@ class CommunicationNodeElement : ConnectableElement {
     override var pos: Offset
     override val type: ElementType
         get() = TODO("Not yet implemented")
-    override val connectionIds: MutableList<Int>
-        get() = TODO("Not yet implemented")
+    override val connectionIds: MutableState<MutableSet<Int>> = mutableStateOf(mutableSetOf())
     override val connectable: Boolean
         get() = TODO("Not yet implemented")
 
@@ -32,6 +33,7 @@ class CommunicationNodeElement : ConnectableElement {
     private val image: ImageBitmap = imageFromResource("router.png")
 
     override fun draw(scope: DrawScope) {
+        // todo: draw connection lines
         scope.drawImage(image, dstOffset = IntOffset(pos.x.toInt(), pos.y.toInt()))
         scope.drawIntoCanvas { canvas ->
             (canvas as DesktopCanvas).skija.drawString(id.toString(), center.x, center.y - height * 0.6f, skiaFont, paint.asFrameworkPaint())

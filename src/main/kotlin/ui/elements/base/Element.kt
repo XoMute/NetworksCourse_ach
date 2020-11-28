@@ -1,6 +1,6 @@
 package ui.elements.base
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -20,7 +20,7 @@ interface Element {
 }
 
 abstract class ConnectableElement : Element {
-    abstract val connectionIds: MutableList<Int>
+    abstract val connectionIds: MutableState<MutableSet<Int>>
     override val connectable: Boolean
         get() = true
 

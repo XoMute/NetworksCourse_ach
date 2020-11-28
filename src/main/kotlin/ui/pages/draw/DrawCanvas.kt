@@ -5,13 +5,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.gesture.DragObserver
-import androidx.compose.ui.gesture.dragGestureFilter
 import androidx.compose.ui.gesture.tapGestureFilter
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import ui.core.DrawPageContext
+import ui.elements.base.ElementType
 
 @Composable
 fun DrawCanvas(modifier: Modifier, context: DrawPageContext) = Canvas(modifier = modifier
@@ -27,4 +26,13 @@ fun DrawCanvas(modifier: Modifier, context: DrawPageContext) = Canvas(modifier =
         })*/
 ) {
     context.elementsState.value.forEach { it.draw(this) }
+    context.drawLine(this)
+}
+
+fun DrawPageContext.drawLine(scope: DrawScope) {
+    if (selectedTypeState.value == ElementType.CONNECTION && connectingElements) {
+        selectedElement.value!!.let {
+            scope.drawLine(Color.Black, it.pos, mousePos, 5f)
+        }
+    }
 }
