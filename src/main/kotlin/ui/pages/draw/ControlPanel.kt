@@ -1,6 +1,7 @@
 package ui.pages.draw
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
@@ -18,6 +19,7 @@ fun ControlPanel(context: DrawPageContext) {
     Column(
             modifier = Modifier
                     .fillMaxWidth()
+                    .background(Color.White)
                     .height(CONTROL_PANEL_HEIGHT)
                     .border(BorderStroke(2.dp, SolidColor(Color.Black)))
     ) {

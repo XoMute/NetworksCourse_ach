@@ -12,7 +12,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-const val THRESHOLD = 15f
+const val THRESHOLD = 10f
 
 class LineElement(
         override val id: Int,

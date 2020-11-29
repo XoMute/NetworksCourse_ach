@@ -7,12 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ui.core.DrawPageContext
+import ui.menu.Tab
 
 val INFO_MENU_WIDTH = 300.dp
 val CONTROL_PANEL_HEIGHT = 100.dp
 
 @Composable
-fun DrawPage(context: DrawPageContext) = Row {
+fun DrawPage(context: DrawPageContext, navigator: (Tab, Any?) -> Unit) = Row {
     Column(modifier = Modifier
             .weight(1f)) {
         Row(modifier = Modifier.fillMaxSize().weight(1f)) {
