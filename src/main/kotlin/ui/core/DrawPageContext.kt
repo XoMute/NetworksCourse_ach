@@ -16,41 +16,61 @@ class DrawPageContext {
     val elementsState: MutableState<MutableList<Element>> = mutableStateOf(mutableListOf())
     var idGenerator: Int = 0
 
-    var connectingElementsState: MutableState<Boolean> = mutableStateOf(false)
+    var connectingElementsState: MutableState<Boolean> = mutableStateOf(false) // selected element for connection
     var selectedElementState: MutableState<Element?> = mutableStateOf(null)
+    var infoElementState: MutableState<Element?> = mutableStateOf(null)
     var mousePosState: MutableState<Offset> = mutableStateOf(Offset.Zero)
+
+    var showInfoState: MutableState<Boolean> = mutableStateOf(false)
 
     fun onMouseMove(pos: Offset): Boolean {
         mousePosState.value = pos
-        if (selectedTypeState.value == ElementType.LINE && connectingElementsState.value) {
-        } else {
+        if (!connectingElementsState.value) {
             // todo: draw selected type under mouse
         }
         return true
     }
 
     fun click(pos: Offset) {
-        elementsState.value.find { (it as DrawableElement).collides(pos) }?.let {
-            println("Clicked on element ${it.id}")
-            when (selectedTypeState.value) {
-                ElementType.LINE -> {
+        val clickedElements = elementsState.value.filter { (it as DrawableElement).collides(pos) }
+        val clickedElement = when {
+            clickedElements.isEmpty() -> null
+            clickedElements.size == 1 -> clickedElements[0]
+            else -> clickedElements.find { it !is LineElement }
+        }
+        clickedElement?.let { el ->
+            println("Clicked on element ${el.id}")
+            if (selectedTypeState.value == ElementType.LINE) {
+                if (el !is LineElement) {
                     if (connectingElementsState.value) {
-                        createConnection(selectedElementState.value!! as ConnectableElement, it as ConnectableElement)
+                        createConnection(selectedElementState.value!! as ConnectableElement, el as ConnectableElement)
                     } else {
-                        startConnection(it as ConnectableElement)
+                        startConnection(el as ConnectableElement)
                     }
                 }
-                else -> {
-                    selectedElementState.value = it
-                    //todo: select element and show info about it
-                }
             }
+            infoElementState.value?.let {
+                if (infoElementState.value != null
+                        && infoElementState.value!!.id == el.id
+                        && el.type == selectedTypeState.value) {
+                    stopShowingInfo()
+                } else {
+                    null
+                }
+            } ?: if (el is LineElement || selectedTypeState.value != ElementType.LINE) showInfo(el)
+            selectedElementState.value = el
         } ?: selectedTypeState.value?.let {
             elementsState.value = elementsState.value.toMutableList().apply {
                 when (it) {
                     ElementType.WORKSTATION -> add(WorkstationElement(idGenerator++, pos))
                     ElementType.COMMUNICATION_NODE -> add(CommunicationNodeElement(idGenerator++, pos))
-                    ElementType.LINE -> {}
+                    ElementType.LINE -> {
+                        if (connectingElementsState.value) {
+                            dropConnection()
+                        } else {
+                            stopShowingInfo()
+                        }
+                    }
                 }
             }
         }
@@ -70,5 +90,20 @@ class DrawPageContext {
         println("Connected ${start.id} and ${end.id}")
         connectingElementsState.value = false
         selectedElementState.value = null
+    }
+
+    private fun dropConnection() {
+        selectedElementState.value = null
+        connectingElementsState.value = false
+    }
+
+    private fun showInfo(el: Element) {
+        infoElementState.value = el
+        showInfoState.value = true
+    }
+
+    private fun stopShowingInfo() {
+        infoElementState.value = null
+        showInfoState.value = false
     }
 }

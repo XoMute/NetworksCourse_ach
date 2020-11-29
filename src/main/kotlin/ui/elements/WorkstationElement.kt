@@ -20,11 +20,8 @@ class WorkstationElement : ConnectableElement, DrawableImageElement {
 
     override val id: Int
     override var pos: Offset
-    override val type: ElementType
-        get() = TODO("Not yet implemented")
+    override val type: ElementType = ElementType.WORKSTATION
     override val connectionIds: MutableState<MutableSet<Int>> = mutableStateOf(mutableSetOf())
-    override val connectable: Boolean
-        get() = TODO("Not yet implemented")
 
     constructor(id: Int, pos: Offset) {
         this.id = id
@@ -35,4 +32,8 @@ class WorkstationElement : ConnectableElement, DrawableImageElement {
     override val height: Int = 64
 
     override val image: ImageBitmap = imageFromResource("workstation.png")
+
+    override fun toString(): String {
+        return "Workstation\nId: $id\nConnections: TODO"
+    }
 }

@@ -19,11 +19,8 @@ class CommunicationNodeElement : ConnectableElement, DrawableImageElement {
 
     override val id: Int
     override var pos: Offset
-    override val type: ElementType
-        get() = TODO("Not yet implemented")
+    override val type: ElementType = ElementType.COMMUNICATION_NODE
     override val connectionIds: MutableState<MutableSet<Int>> = mutableStateOf(mutableSetOf())
-    override val connectable: Boolean
-        get() = TODO("Not yet implemented")
 
     override val width: Int = 64
     override val height: Int = 64
@@ -34,4 +31,8 @@ class CommunicationNodeElement : ConnectableElement, DrawableImageElement {
     }
 
     override val image: ImageBitmap = imageFromResource("router.png")
+
+    override fun toString(): String {
+        return "Communication node\nId: $id\nConnections: TODO"
+    }
 }

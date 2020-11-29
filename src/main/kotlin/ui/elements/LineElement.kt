@@ -9,6 +9,10 @@ import ui.core.DrawPageContext
 import ui.elements.base.DrawableElement
 import ui.elements.base.ElementType
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+
+const val THRESHOLD = 15f
 
 class LineElement(
         override val id: Int,
@@ -16,12 +20,34 @@ class LineElement(
         var el2: DrawableElement,
         var weight: Int = 1
 ) : DrawableElement() {
-    override val type: ElementType
-        get() = TODO("Not yet implemented")
-    override var pos: Offset = Offset.Zero //todo: change all that
-    override val connectable: Boolean = false
+    override var pos: Offset = Offset.Zero //todo: change
     override val width: Int = 0
     override val height: Int = 0
+    override val type: ElementType = ElementType.LINE
+    var lineType: LineType = LineType.DUPLEX
+    var errorProbability: Float = 0f
+
+    override fun collides(offset: Offset): Boolean {
+        return distanceTo(offset) <= THRESHOLD
+    }
+
+    private fun distanceTo(offset: Offset): Float {
+        val start = el1.center
+        val end = el2.center
+        val l2 = distance(start, end)
+        var t = ((offset.x - start.x) * (end.x - start.x) + (offset.y - start.y) * (end.y - start.y)) / l2
+        t = max(0f, min(1f, t))
+        return distance(offset, Offset(
+                start.x + t * (end.x - start.x),
+                start.y + t * (end.y - start.y)
+        ))
+    }
+
+    private fun distance(p1: Offset, p2: Offset): Float {
+        return sqr(p1.x - p2.x) + sqr(p1.y - p2.y)
+    }
+
+    private fun sqr(x: Float): Float = x * x
 
     override fun draw(scope: DrawScope, context: DrawPageContext) {
         scope.drawLine(Color.Black, el1.center, el2.center, 5f)
@@ -33,4 +59,11 @@ class LineElement(
         }
     }
 
+    override fun toString(): String {
+        return "Line\nWeight: $weight\nType: $lineType\nError probability: $errorProbability"
+    }
+}
+
+enum class LineType {
+    DUPLEX, HALF_DUPLEX
 }

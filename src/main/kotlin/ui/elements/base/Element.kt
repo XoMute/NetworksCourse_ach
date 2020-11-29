@@ -15,10 +15,6 @@ interface Element {
     val id: Int
     val type: ElementType
     var pos: Offset
-    val connectable: Boolean
-
-//    fun collides(offset: Offset): Boolean
-//    fun draw(scope: DrawScope, context: DrawPageContext)
 }
 
 abstract class DrawableElement : Element {
@@ -33,7 +29,7 @@ abstract class DrawableElement : Element {
         Rect(topLeft = pos, bottomRight = Offset(x = pos.x + width, y = pos.y + height))
     }
 
-    fun collides(offset: Offset): Boolean {
+    open fun collides(offset: Offset): Boolean {
         return rect.contains(offset)
     }
 
@@ -64,8 +60,6 @@ abstract class DrawableImageElement : DrawableElement() {
 
 interface ConnectableElement : Element {
     val connectionIds: MutableState<MutableSet<Int>>
-    override val connectable: Boolean
-        get() = true
 }
 
 enum class ElementType {

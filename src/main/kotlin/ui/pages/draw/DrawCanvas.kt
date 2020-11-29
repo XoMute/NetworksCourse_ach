@@ -14,7 +14,7 @@ import ui.elements.base.DrawableElement
 import ui.elements.base.ElementType
 
 @Composable
-fun DrawCanvas(modifier: Modifier, context: DrawPageContext) = Canvas(modifier = modifier
+fun DrawCanvas(context: DrawPageContext, modifier: Modifier = Modifier) = Canvas(modifier = modifier
         .fillMaxSize()
         .background(Color.White)
         .pointerMoveFilter(onMove = { context.onMouseMove(it) })

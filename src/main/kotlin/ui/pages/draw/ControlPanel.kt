@@ -18,7 +18,7 @@ fun ControlPanel(context: DrawPageContext) {
     Column(
             modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
+                    .height(CONTROL_PANEL_HEIGHT)
                     .border(BorderStroke(2.dp, SolidColor(Color.Black)))
     ) {
         Row(modifier = Modifier

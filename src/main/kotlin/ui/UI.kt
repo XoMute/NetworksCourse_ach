@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import ui.core.DrawPageContext
 import ui.pages.draw.DrawPage
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -16,6 +17,7 @@ fun MainUI() {
             modifier = Modifier.fillMaxSize()
                     .background(color = Color.White)
     ) {
-        DrawPage()
+        val context = DrawPageContext()
+        DrawPage(context)
     }
 }
