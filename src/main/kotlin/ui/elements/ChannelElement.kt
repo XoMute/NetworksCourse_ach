@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.DesktopCanvas
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import core.Node
 import ui.core.DrawPageContext
 import ui.elements.base.DrawableElement
 import ui.elements.base.ElementType
@@ -14,7 +15,7 @@ import kotlin.math.min
 
 const val THRESHOLD = 10f
 
-class LineElement(
+class ChannelElement(
         override val id: Int,
         var el1: DrawableElement,
         var el2: DrawableElement,
@@ -23,8 +24,8 @@ class LineElement(
     override var pos: Offset = Offset.Zero //todo: change
     override val width: Int = 0
     override val height: Int = 0
-    override val type: ElementType = ElementType.LINE
-    var lineType: LineType = LineType.DUPLEX
+    override val type = ElementType.CHANNEL
+    var lineType: ChannelType = ChannelType.DUPLEX
     var errorProbability: Float = 0f
 
     override fun collides(offset: Offset): Boolean {
@@ -64,6 +65,6 @@ class LineElement(
     }
 }
 
-enum class LineType {
+enum class ChannelType {
     DUPLEX, HALF_DUPLEX
 }

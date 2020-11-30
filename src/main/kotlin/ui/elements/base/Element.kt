@@ -7,6 +7,8 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.unit.IntOffset
+import core.Node
+import core.RoutingTable
 import org.jetbrains.skija.Font
 import org.jetbrains.skija.Typeface
 import ui.core.DrawPageContext
@@ -60,8 +62,17 @@ abstract class DrawableImageElement : DrawableElement() {
 
 interface ConnectableElement : Element {
     val connectionIds: MutableState<MutableSet<Int>>
+    val routingTable: RoutingTable
+
+    fun showRoutingTable(): String {
+        return routingTable.toString()
+    }
+
+    fun toGraphNode(): Node {
+        return Node(id)
+    }
 }
 
 enum class ElementType {
-    WORKSTATION, COMMUNICATION_NODE, LINE
+    WORKSTATION, COMMUNICATION_NODE, CHANNEL
 }

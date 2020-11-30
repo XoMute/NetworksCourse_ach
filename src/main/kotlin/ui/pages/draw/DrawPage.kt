@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ui.core.DrawPageContext
+import ui.elements.base.ElementType
 import ui.menu.Tab
 
 val INFO_MENU_WIDTH = 300.dp
@@ -19,9 +20,12 @@ fun DrawPage(context: DrawPageContext, navigator: (Tab, Any?) -> Unit) = Row {
         Row(modifier = Modifier.fillMaxSize().weight(1f)) {
             DrawCanvas(context)
             if (context.showInfoState.value) {
-                DetailsMenu(context)
+                when (context.infoElementState.value!!.type) {
+                    ElementType.CHANNEL -> ChannelDetailsMenu(context)
+                    else -> NodeDetailsMenu(context)
+                }
             }
         }
-        ControlPanel(context)
+        ControlPanel(context, navigator)
     }
 }

@@ -3,16 +3,16 @@ package ui
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.TabRow
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import ui.core.DrawPageContext
 import ui.menu.Navigator
 import ui.menu.Tab
 import ui.menu.navigateTo
-import ui.pages.draw.DrawPage
 
 const val DRAW_PAGE_TITLE = "Draw"
 const val ROUTING_PAGE_TITLE = "Routing"

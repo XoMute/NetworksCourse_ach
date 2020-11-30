@@ -4,6 +4,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Button
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,9 +15,10 @@ import androidx.compose.ui.unit.dp
 import ui.core.DrawPageContext
 import ui.elements.compose.ControlPanelElement
 import ui.elements.base.ElementType
+import ui.menu.Tab
 
 @Composable
-fun ControlPanel(context: DrawPageContext) {
+fun ControlPanel(context: DrawPageContext, navigator: (Tab, Any?) -> Unit) {
     Column(
             modifier = Modifier
                     .fillMaxWidth()
@@ -37,14 +40,13 @@ fun ControlPanel(context: DrawPageContext) {
             Spacer(modifier = Modifier
                     .width(32.dp))
             ControlPanelElement("line.png") {
-                context.selectedTypeState.value = ElementType.LINE
+                context.selectedTypeState.value = ElementType.CHANNEL
             }
             Spacer(modifier = Modifier
                     .width(100.dp))
-           /* Button(onClick = {
-
-            }, modifier = Modifier
-                    .width(20.dp))*/
+            Button(onClick = { context.sendMessage(navigator) }) {
+                Text(text = "Send Message")
+            }
         }
     }
 }

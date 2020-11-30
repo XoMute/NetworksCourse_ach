@@ -10,11 +10,15 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.imageFromResource
 import androidx.compose.ui.unit.IntOffset
+import core.Graph
+import core.Node
+import core.RoutingTable
 import ui.core.DrawPageContext
 import ui.elements.base.ConnectableElement
 import ui.elements.base.DrawableElement
 import ui.elements.base.DrawableImageElement
 import ui.elements.base.ElementType
+import java.util.*
 
 class WorkstationElement : ConnectableElement, DrawableImageElement {
 
@@ -22,10 +26,12 @@ class WorkstationElement : ConnectableElement, DrawableImageElement {
     override var pos: Offset
     override val type: ElementType = ElementType.WORKSTATION
     override val connectionIds: MutableState<MutableSet<Int>> = mutableStateOf(mutableSetOf())
+    override val routingTable: RoutingTable
 
     constructor(id: Int, pos: Offset) {
         this.id = id
         this.pos = Offset(pos.x - width / 2f, pos.y - height / 2f)
+        this.routingTable = RoutingTable(id)
     }
 
     override val width: Int = 64

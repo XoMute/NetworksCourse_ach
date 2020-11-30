@@ -27,11 +27,11 @@ fun DrawCanvas(context: DrawPageContext, modifier: Modifier = Modifier) = Canvas
         })*/
 ) {
     context.elementsState.value.forEach { (it as DrawableElement).draw(this, context) }
-    context.drawLine(this)
+    context.drawChannel(this)
 }
 
-fun DrawPageContext.drawLine(scope: DrawScope) {
-    if (selectedTypeState.value == ElementType.LINE && connectingElementsState.value) {
+fun DrawPageContext.drawChannel(scope: DrawScope) {
+    if (selectedTypeState.value == ElementType.CHANNEL && connectingElementsState.value) {
         selectedElementState.value!!.let {
             scope.drawLine(Color.Black, (it as DrawableElement).center, mousePosState.value, 5f)
         }
