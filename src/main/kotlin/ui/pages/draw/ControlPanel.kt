@@ -12,13 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
-import ui.core.DrawPageContext
+import ui.core.AppContext
 import ui.elements.compose.ControlPanelElement
 import ui.elements.base.ElementType
-import ui.menu.Tab
 
 @Composable
-fun ControlPanel(context: DrawPageContext, navigator: (Tab, Any?) -> Unit) {
+fun ControlPanel(context: AppContext) {
     Column(
             modifier = Modifier
                     .fillMaxWidth()
@@ -44,7 +43,7 @@ fun ControlPanel(context: DrawPageContext, navigator: (Tab, Any?) -> Unit) {
             }
             Spacer(modifier = Modifier
                     .width(100.dp))
-            Button(onClick = { context.sendMessage(navigator) }) {
+            Button(onClick = { context.sendMessage() }) {
                 Text(text = "Send Message")
             }
         }

@@ -28,11 +28,11 @@ class CommunicationNodeElement : ConnectableElement, DrawableImageElement {
         this.routingTable = RoutingTable(id)
     }
 
-    // todo: update routing tables of each routers in network when some changes to it are made
-    // which pathfinding algorithm should I use?
-    // how to collect all connected nodes to a network(graph)?
-
     override fun toString(): String {
         return "Communication node\nId: $id\nConnections: TODO"
+    }
+
+    override fun sendPackage(pkg: Package) {
+        TODO("Not yet implemented")
     }
 }

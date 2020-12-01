@@ -9,12 +9,12 @@ import androidx.compose.ui.gesture.tapGestureFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerMoveFilter
-import ui.core.DrawPageContext
+import ui.core.AppContext
 import ui.elements.base.DrawableElement
 import ui.elements.base.ElementType
 
 @Composable
-fun DrawCanvas(context: DrawPageContext, modifier: Modifier = Modifier) = Canvas(modifier = modifier
+fun DrawCanvas(context: AppContext, modifier: Modifier = Modifier) = Canvas(modifier = modifier
         .fillMaxSize()
         .background(Color.White)
         .pointerMoveFilter(onMove = { context.onMouseMove(it) })
@@ -30,7 +30,7 @@ fun DrawCanvas(context: DrawPageContext, modifier: Modifier = Modifier) = Canvas
     context.drawChannel(this)
 }
 
-fun DrawPageContext.drawChannel(scope: DrawScope) {
+fun AppContext.drawChannel(scope: DrawScope) {
     if (selectedTypeState.value == ElementType.CHANNEL && connectingElementsState.value) {
         selectedElementState.value!!.let {
             scope.drawLine(Color.Black, (it as DrawableElement).center, mousePosState.value, 5f)

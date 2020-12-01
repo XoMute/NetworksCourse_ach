@@ -10,10 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import ui.core.DrawPageContext
+import ui.core.AppContext
 
 @Composable
-fun NodeDetailsMenu(context: DrawPageContext) {
+fun NodeDetailsMenu(context: AppContext) {
     Column(modifier = Modifier
             .width(INFO_MENU_WIDTH)
             .fillMaxHeight()
@@ -33,7 +33,7 @@ fun NodeDetailsMenu(context: DrawPageContext) {
 }
 
 @Composable
-fun ChannelDetailsMenu(context: DrawPageContext) {
+fun ChannelDetailsMenu(context: AppContext) {
     Column(modifier = Modifier
             .width(INFO_MENU_WIDTH)
             .fillMaxHeight()

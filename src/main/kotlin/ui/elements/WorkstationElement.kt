@@ -3,22 +3,12 @@ package ui.elements
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.DesktopCanvas
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.imageFromResource
-import androidx.compose.ui.unit.IntOffset
-import core.Graph
-import core.Node
 import core.RoutingTable
-import ui.core.DrawPageContext
 import ui.elements.base.ConnectableElement
-import ui.elements.base.DrawableElement
 import ui.elements.base.DrawableImageElement
 import ui.elements.base.ElementType
-import java.util.*
 
 class WorkstationElement : ConnectableElement, DrawableImageElement {
 
@@ -41,5 +31,9 @@ class WorkstationElement : ConnectableElement, DrawableImageElement {
 
     override fun toString(): String {
         return "Workstation\nId: $id\nConnections: TODO"
+    }
+
+    override fun sendPackage(pkg: Package) {
+        TODO("Not yet implemented")
     }
 }

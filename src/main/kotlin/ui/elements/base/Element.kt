@@ -11,7 +11,7 @@ import core.Node
 import core.RoutingTable
 import org.jetbrains.skija.Font
 import org.jetbrains.skija.Typeface
-import ui.core.DrawPageContext
+import ui.core.AppContext
 
 interface Element {
     val id: Int
@@ -46,13 +46,13 @@ abstract class DrawableElement : Element {
         }
     }
 
-   abstract fun draw(scope: DrawScope, context: DrawPageContext)
+   abstract fun draw(scope: DrawScope, context: AppContext)
 }
 
 abstract class DrawableImageElement : DrawableElement() {
     abstract val image: ImageBitmap
 
-    override fun draw(scope: DrawScope, context: DrawPageContext) {
+    override fun draw(scope: DrawScope, context: AppContext) {
         scope.drawImage(image, dstOffset = IntOffset(pos.x.toInt(), pos.y.toInt()))
         scope.drawIntoCanvas { canvas ->
             (canvas as DesktopCanvas).skija.drawString(id.toString(), center.x, center.y - height * 0.6f, skiaFont, paint.asFrameworkPaint())
@@ -71,6 +71,8 @@ interface ConnectableElement : Element {
     fun toGraphNode(): Node {
         return Node(id)
     }
+
+    fun sendPackage(pkg: Package)
 }
 
 enum class ElementType {

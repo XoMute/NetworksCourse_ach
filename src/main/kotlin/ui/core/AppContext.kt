@@ -11,10 +11,9 @@ import ui.elements.base.ConnectableElement
 import ui.elements.base.DrawableElement
 import ui.elements.base.Element
 import ui.elements.base.ElementType
-import ui.menu.Tab
-import ui.pages.draw.calculation.SendMessageWindow
+import ui.pages.draw.SendMessageWindow
 
-class DrawPageContext {
+class AppContext {
     val selectedTypeState: MutableState<ElementType?> = mutableStateOf(null)
     val elementsState: MutableState<MutableList<Element>> = mutableStateOf(mutableListOf())
     val graph: Graph = Graph()
@@ -44,7 +43,6 @@ class DrawPageContext {
             else -> clickedElements.find { it !is ChannelElement }
         }
         clickedElement?.let { el ->
-            println("Clicked on element ${el.id}")
             if (selectedTypeState.value == ElementType.CHANNEL) {
                 if (el !is ChannelElement) {
                     if (connectingElementsState.value) {
@@ -52,7 +50,7 @@ class DrawPageContext {
                     } else {
                         startConnection(el as ConnectableElement)
                     }
-                }
+                } else return
             }
             infoElementState.value?.let {
                 if (infoElementState.value != null
@@ -90,10 +88,12 @@ class DrawPageContext {
         }
     }
 
-    fun sendMessage(navigator: (Tab, Any?) -> Unit) {
+    fun sendMessage() {
         val nodes = elementsState.value.filterIsInstance<ConnectableElement>()
         val lines = elementsState.value.filterIsInstance<ChannelElement>()
-//        SendMessageWindow(nodes, lines) { navigator(Tab.ROUTING, result) }
+        SendMessageWindow(nodes, lines) { path, message ->
+            println("Sending message $message by path $path")
+        }
     }
 
     fun showRoutingTable() {
@@ -114,14 +114,13 @@ class DrawPageContext {
             graph.addLink(start.id, end.id, channelElement.weight)
         }
         updateRouteTables()
-        println("Connected ${start.id} and ${end.id}")
         connectingElementsState.value = false
         selectedElementState.value = null
     }
 
     private fun updateRouteTables() {
         elementsState.value.filterIsInstance<ConnectableElement>()
-                .filter { it.connectionIds.value.isNotEmpty() } // todo: calculate only for connected nodes
+                .filter { it.connectionIds.value.isNotEmpty() } // todo: calculate only for connected and active nodes
                 .map { x ->
                     graph.calculateShortestPathFromSource(x.id)
                     elementsState.value.filterIsInstance<ConnectableElement>().forEach { y ->

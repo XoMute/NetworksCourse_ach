@@ -5,8 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.DesktopCanvas
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import core.Node
-import ui.core.DrawPageContext
+import ui.core.AppContext
 import ui.elements.base.DrawableElement
 import ui.elements.base.ElementType
 import kotlin.math.abs
@@ -50,7 +49,7 @@ class ChannelElement(
 
     private fun sqr(x: Float): Float = x * x
 
-    override fun draw(scope: DrawScope, context: DrawPageContext) {
+    override fun draw(scope: DrawScope, context: AppContext) {
         scope.drawLine(Color.Black, el1.center, el2.center, 5f)
         scope.drawIntoCanvas { canvas ->
             (canvas as DesktopCanvas).skija.drawString(weight.toString(),
