@@ -5,6 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.gesture.DragObserver
+import androidx.compose.ui.gesture.dragGestureFilter
 import androidx.compose.ui.gesture.tapGestureFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -19,6 +22,22 @@ fun DrawCanvas(context: AppContext, modifier: Modifier = Modifier) = Canvas(modi
         .background(Color.White)
         .pointerMoveFilter(onMove = { context.onMouseMove(it) })
         .tapGestureFilter { context.click(it) }
+        .dragGestureFilter(dragObserver = object : DragObserver {
+            override fun onStart(downPosition: Offset) {
+                super.onStart(downPosition)
+                println("Starting drag at $downPosition")
+            }
+
+            override fun onStop(velocity: Offset) {
+                super.onStop(velocity)
+                println("Stopping drag with velocity $velocity")
+            }
+
+            override fun onDrag(dragDistance: Offset): Offset {
+                println("Dragged $dragDistance")
+                return dragDistance
+            }
+        })
         /*.dragGestureFilter(dragObserver = object : DragObserver { // todo
             override fun onDrag(dragDistance: Offset): Offset {
                 context.drag(dragDistance)

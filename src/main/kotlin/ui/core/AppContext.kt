@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import core.Graph
+import core.PackageType
 import ui.elements.CommunicationNodeElement
 import ui.elements.ChannelElement
 import ui.elements.WorkstationElement
@@ -91,8 +92,19 @@ class AppContext {
     fun sendMessage() {
         val nodes = elementsState.value.filterIsInstance<ConnectableElement>()
         val lines = elementsState.value.filterIsInstance<ChannelElement>()
-        SendMessageWindow(nodes, lines) { path, message ->
-            println("Sending message $message by path $path")
+        var infoPackages = 0
+        var servicePackages = 0
+        SendMessageWindow(nodes, lines) { src, dest, message ->
+            val startTime = System.nanoTime()
+            println("Sending message $message from $src to $dest")
+            // todo: if tcp - handshake (+ 2 service packages)
+            message.splitIntoPackages(src, dest).forEach {
+                servicePackages += nodes.node(src).sendPackage(it, message.protocol)
+                infoPackages++
+            }
+            val endTime = System.nanoTime()
+            // todo: show new window with metrics
+            println("Result:\nInfo packages sent: $infoPackages, service packages sent: $servicePackages, time: ${endTime - startTime}ns")
         }
     }
 
@@ -119,16 +131,30 @@ class AppContext {
     }
 
     private fun updateRouteTables() {
-        elementsState.value.filterIsInstance<ConnectableElement>()
+        val connectableElems: List<ConnectableElement> = elementsState.value.filterIsInstance<ConnectableElement>()
+                connectableElems
                 .filter { it.connectionIds.value.isNotEmpty() } // todo: calculate only for connected and active nodes
                 .map { x ->
                     graph.calculateShortestPathFromSource(x.id)
-                    elementsState.value.filterIsInstance<ConnectableElement>().forEach { y ->
-                        x.routingTable.table[y.id] = graph.nodes
-                                .find { node -> node.id == y.id }!!.realPath
-                                .map { node -> node.id }
+                    connectableElems.forEach { y ->
+                        val path = graph.nodes.find { node -> node.id == y.id }!!.realPath.map { it.id }
+                        println("Path for ${y.id} is $path")
+                        if (path.isNotEmpty()) {
+                            var currentNode = path[0]
+                            path.subList(1, path.size).forEach { id ->
+                                val elem: ConnectableElement = connectableElems.node(id)
+                                connectableElems.node(currentNode).routingTable.addRoute(y.id, elem)
+                                currentNode = id
+                            }
+                        }
+//                        x.routingTable.table[y.id] = path
+//                                .map { node -> node.id }
                     }
                 }
+    }
+
+    private fun List<ConnectableElement>.node(id: Int): ConnectableElement {
+        return find { it.id == id }!!
     }
 
     private fun dropConnection() {

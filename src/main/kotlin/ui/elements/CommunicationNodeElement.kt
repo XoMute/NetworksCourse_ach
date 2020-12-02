@@ -5,9 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.imageFromResource
-import core.RoutingTable
+import ui.core.RoutingTable
 import ui.elements.base.ConnectableElement
 import ui.elements.base.DrawableImageElement
+import ui.elements.base.Element
 import ui.elements.base.ElementType
 
 class CommunicationNodeElement : ConnectableElement, DrawableImageElement {
@@ -25,14 +26,15 @@ class CommunicationNodeElement : ConnectableElement, DrawableImageElement {
     constructor(id: Int, pos: Offset) {
         this.id = id
         this.pos = Offset(pos.x - width / 2f, pos.y - height / 2f)
-        this.routingTable = RoutingTable(id)
+        this.routingTable = RoutingTable()
     }
 
     override fun toString(): String {
-        return "Communication node\nId: $id\nConnections: TODO"
+        return "Communication node(Id: $id)"
     }
 
-    override fun sendPackage(pkg: Package) {
-        TODO("Not yet implemented")
+
+    override fun equals(other: Any?): Boolean {
+        return this === other || id == (other as? Element)?.id && type == (other).type
     }
 }

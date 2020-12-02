@@ -16,8 +16,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import core.Message
 import core.ProtocolType
-import core.RoutingPath
-import core.constructPath
 import ui.elements.ChannelElement
 import ui.elements.base.ConnectableElement
 
@@ -33,7 +31,7 @@ data class MessageInfoState(
 fun SendMessageWindow(
         nodes: List<ConnectableElement>,
         channels: List<ChannelElement>,
-        onSendAction: (RoutingPath, Message) -> Unit
+        onSendAction: (Int, Int, Message) -> Unit
 ) {
     val window = AppWindow(size = IntSize(400, 400)).also {
         it.keyboard.setShortcut(Key.Escape) {
@@ -167,10 +165,10 @@ fun SendMessageWindow(
                                 protocol = messageInfoState.value.protocolType,
                                 packageSize = messageInfoState.value.packageSize
                         )
-                        onSendAction(constructPath(
-                                from = messageInfoState.value.fromNode!!,
-                                to = messageInfoState.value.toNode!!
-                        ), message)
+                        onSendAction(
+                                messageInfoState.value.fromNode!!.id,
+                                messageInfoState.value.toNode!!.id,
+                                message)
                         window.close()
                     }
                 }

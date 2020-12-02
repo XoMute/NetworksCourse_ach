@@ -5,7 +5,7 @@ import java.util.*
 
 data class Node(val id: Int) {
     var shortestPath: List<Node> = mutableListOf()
-    var realPath: List<Node> = mutableListOf()
+    val realPath: List<Node>
         get() {
             return if (shortestPath.isEmpty()) {
                 emptyList()
@@ -33,11 +33,6 @@ class Graph {
         val node1 = nodes.find { it.id == id1 }!!
         val node2 = nodes.find { it.id == id2 }!!
         node1.addLink(node2, weight)
-        calculateAllGraph()
-    }
-
-    fun calculateAllGraph() {
-        nodes.forEach { calculateShortestPathFromSource(it.id) }
     }
 
     fun calculateShortestPathFromSource(nodeId: Int) {
@@ -71,12 +66,11 @@ class Graph {
             val shortestPath: LinkedList<Node> = LinkedList(sourceNode.shortestPath)
             shortestPath.add(sourceNode)
             evaluationNode.shortestPath = shortestPath
-            evaluationNode.realPath = LinkedList(shortestPath).also { it.add(evaluationNode) }
         }
     }
 
     private fun setupNodes() {
-        nodes.forEach { it.distance = Int.MAX_VALUE; it.shortestPath = emptyList(); it.realPath = emptyList() }
+        nodes.forEach { it.distance = Int.MAX_VALUE; it.shortestPath = emptyList(); }
     }
 }
 

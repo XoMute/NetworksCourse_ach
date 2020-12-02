@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import ui.core.AppContext
 import ui.elements.base.DrawableElement
+import ui.elements.base.Element
 import ui.elements.base.ElementType
 import kotlin.math.abs
 import kotlin.math.max
@@ -61,6 +62,10 @@ class ChannelElement(
 
     override fun toString(): String {
         return "Line\nWeight: $weight\nType: $lineType\nError probability: $errorProbability"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return this === other || id == (other as? Element)?.id && type == (other).type
     }
 }
 

@@ -7,11 +7,11 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.unit.IntOffset
-import core.Node
-import core.RoutingTable
+import core.*
 import org.jetbrains.skija.Font
 import org.jetbrains.skija.Typeface
 import ui.core.AppContext
+import ui.core.RoutingTable
 
 interface Element {
     val id: Int
@@ -72,7 +72,25 @@ interface ConnectableElement : Element {
         return Node(id)
     }
 
-    fun sendPackage(pkg: Package)
+    fun sendPackage(pkg: Package, protocol: ProtocolType): Int {
+        if (pkg.destination == id) {
+            log("Accepting package $pkg")
+            if (protocol == ProtocolType.TCP && pkg.type == PackageType.INFO) {
+                sendPackage(Package(id, pkg.source, PackageType.SERVICE, 1), protocol)
+                return 1
+            }
+        } else {
+            routingTable.table[pkg.destination]?.let {
+                log("Sending package $pkg to ${it.id}")
+                return it.sendPackage(pkg, protocol)
+            } ?: log("Can't send package from node $id to ${pkg.destination}")
+        }
+        return 0
+    }
+}
+
+fun ConnectableElement.log(message: String) {
+    println("Node $id: $message")
 }
 
 enum class ElementType {
