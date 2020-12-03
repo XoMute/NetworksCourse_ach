@@ -5,9 +5,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.DesktopCanvas
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import serialization.Channel
+import serialization.Element
 import ui.core.AppContext
 import ui.elements.base.DrawableElement
-import ui.elements.base.Element
 import ui.elements.base.ElementType
 import kotlin.math.abs
 import kotlin.math.max
@@ -19,14 +20,14 @@ class ChannelElement(
         override val id: Int,
         var el1: DrawableElement,
         var el2: DrawableElement,
-        var weight: Int = 1
+        var channelType: ChannelType = ChannelType.DUPLEX,
+        var weight: Int = 1,
+        var errorProbability: Float = 0f
 ) : DrawableElement() {
     override var pos: Offset = Offset.Zero //todo: change
     override val width: Int = 0
     override val height: Int = 0
     override val type = ElementType.CHANNEL
-    var lineType: ChannelType = ChannelType.DUPLEX
-    var errorProbability: Float = 0f
 
     override fun collides(offset: Offset): Boolean {
         return distanceTo(offset) <= THRESHOLD
@@ -60,12 +61,23 @@ class ChannelElement(
         }
     }
 
-    override fun toString(): String {
-        return "Line\nWeight: $weight\nType: $lineType\nError probability: $errorProbability"
+    override fun serialize(): Any {
+        return Channel(id, el1.id, el2.id, weight, channelType, errorProbability)
     }
 
-    override fun equals(other: Any?): Boolean {
-        return this === other || id == (other as? Element)?.id && type == (other).type
+    override fun toString(): String {
+        return "Line\nWeight: $weight\nType: $channelType\nError probability: $errorProbability"
+    }
+
+    companion object {
+        fun deserialize(channel: Channel, context: AppContext): ChannelElement {
+            return ChannelElement(channel.id,
+                    context.elementsState.value.find { it.id == channel.el1 }!! as DrawableElement,
+                    context.elementsState.value.find { it.id == channel.el2 }!! as DrawableElement,
+                    channel.type,
+                    channel.weight,
+                    channel.errorProbability)
+        }
     }
 }
 

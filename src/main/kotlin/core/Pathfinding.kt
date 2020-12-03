@@ -59,6 +59,10 @@ class Graph {
         }
     }
 
+    fun clear() {
+        nodes.clear()
+    }
+
     private fun calculateMinimumDistance(evaluationNode: Node, edgeWeight: Int, sourceNode: Node) {
         val calcValue = sourceNode.distance + edgeWeight
         if (calcValue < evaluationNode.distance) {

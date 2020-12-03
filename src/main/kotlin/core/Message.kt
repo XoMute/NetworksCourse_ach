@@ -10,10 +10,10 @@ data class Message(
         val packages = mutableListOf<Package>()
         val n = size / packageSize
         repeat(n) {
-            packages.add(Package(src, dst, pkgType, packageSize))
+            packages.add(Package(src, dst, pkgType, protocol, packageSize))
         }
         if (size % packageSize > 0) {
-            packages.add(Package(src, dst, pkgType, size % packageSize))
+            packages.add(Package(src, dst, pkgType, protocol, size % packageSize))
         }
         return packages
     }

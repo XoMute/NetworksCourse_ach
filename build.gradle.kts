@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
+    implementation("com.google.code.gson:gson:2.8.6")
 }
 
 compose.desktop {

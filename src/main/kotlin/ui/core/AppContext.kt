@@ -1,10 +1,10 @@
 package ui.core
 
+import androidx.compose.desktop.Window
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import core.Graph
-import core.PackageType
 import ui.elements.CommunicationNodeElement
 import ui.elements.ChannelElement
 import ui.elements.WorkstationElement
@@ -12,14 +12,22 @@ import ui.elements.base.ConnectableElement
 import ui.elements.base.DrawableElement
 import ui.elements.base.Element
 import ui.elements.base.ElementType
-import ui.pages.draw.SendMessageWindow
+import ui.pages.draw.windows.DumpGraphWindow
+import ui.pages.draw.windows.LoadGraphWindow
+import ui.pages.draw.windows.SendMessageWindow
+
+const val CHANNEL_DELAY = 5L // in milliseconds
+const val SIMULATION_DELAY = 100L
+
+val CHANNEL_WEIGHTS: List<Int> = listOf(1, 3, 5, 7, 8, 11, 12, 15, 18, 21, 25, 27, 32)
 
 class AppContext {
     val selectedTypeState: MutableState<ElementType?> = mutableStateOf(null)
     val elementsState: MutableState<MutableList<Element>> = mutableStateOf(mutableListOf())
+    val channelWeightState = mutableStateOf("Random")
     val graph: Graph = Graph()
     private var idGenerator: Int = 0
-    private var lineIdGenerator: Int = 0
+    private var channelIdGenerator: Int = 0
 
     var connectingElementsState: MutableState<Boolean> = mutableStateOf(false) // selected element for connection
     var selectedElementState: MutableState<Element?> = mutableStateOf(null)
@@ -95,16 +103,18 @@ class AppContext {
         var infoPackages = 0
         var servicePackages = 0
         SendMessageWindow(nodes, lines) { src, dest, message ->
+            // todo: start simulation with ticks (which somehow will not block ui so that we can pause or fast-forward it)
             val startTime = System.nanoTime()
             println("Sending message $message from $src to $dest")
             // todo: if tcp - handshake (+ 2 service packages)
             message.splitIntoPackages(src, dest).forEach {
-                servicePackages += nodes.node(src).sendPackage(it, message.protocol)
+                servicePackages += nodes.node(src).sendPackage(it)
                 infoPackages++
             }
             val endTime = System.nanoTime()
+            val time = (endTime - startTime)
             // todo: show new window with metrics
-            println("Result:\nInfo packages sent: $infoPackages, service packages sent: $servicePackages, time: ${endTime - startTime}ns")
+            println("Result:\nInfo packages sent: $infoPackages, service packages sent: $servicePackages, time: $time ns")
         }
     }
 
@@ -118,27 +128,30 @@ class AppContext {
     }
 
     private fun createConnection(start: ConnectableElement, end: ConnectableElement) {
-        start.connectionIds.value = start.connectionIds.value.apply { add(end.id) }.toMutableSet()
-        end.connectionIds.value = end.connectionIds.value.apply { add(start.id) }.toMutableSet()
-        elementsState.value = elementsState.value.toMutableList().apply {
-            val channelElement = ChannelElement(lineIdGenerator++, start as DrawableElement, end as DrawableElement)
-            add(channelElement)
-            graph.addLink(start.id, end.id, channelElement.weight)
+        val channel = ChannelElement(
+                channelIdGenerator++,
+                start as DrawableElement,
+                end as DrawableElement,
+                weight = if (channelWeightState.value == "Random") CHANNEL_WEIGHTS.random() else channelWeightState.value.toInt())
+        start.channels.value = start.channels.value.apply { add(channel) }.toMutableSet()
+        end.channels.value = end.channels.value.apply { add(channel) }.toMutableSet()
+        elementsState.value = elementsState.value.toMutableList().apply { // todo: do i need channel in element list?
+            add(channel)
+            graph.addLink(start.id, end.id, channel.weight)
         }
         updateRouteTables()
         connectingElementsState.value = false
         selectedElementState.value = null
     }
 
-    private fun updateRouteTables() {
+    fun updateRouteTables() {
         val connectableElems: List<ConnectableElement> = elementsState.value.filterIsInstance<ConnectableElement>()
-                connectableElems
-                .filter { it.connectionIds.value.isNotEmpty() } // todo: calculate only for connected and active nodes
+        connectableElems
+                .filter { it.channels.value.isNotEmpty() } // todo: calculate only for connected and active nodes
                 .map { x ->
                     graph.calculateShortestPathFromSource(x.id)
                     connectableElems.forEach { y ->
                         val path = graph.nodes.find { node -> node.id == y.id }!!.realPath.map { it.id }
-                        println("Path for ${y.id} is $path")
                         if (path.isNotEmpty()) {
                             var currentNode = path[0]
                             path.subList(1, path.size).forEach { id ->
@@ -147,8 +160,6 @@ class AppContext {
                                 currentNode = id
                             }
                         }
-//                        x.routingTable.table[y.id] = path
-//                                .map { node -> node.id }
                     }
                 }
     }
@@ -168,6 +179,28 @@ class AppContext {
     }
 
     private fun stopShowingInfo() {
+        infoElementState.value = null
+        showInfoState.value = false
+    }
+
+
+    fun dumpGraph() {
+        DumpGraphWindow(elementsState.value)
+    }
+
+    fun loadGraph() {
+        LoadGraphWindow(this)
+    }
+
+    fun clear() {
+        elementsState.value = mutableListOf()
+        selectedTypeState.value = null
+        channelWeightState.value = "Random"
+        graph.clear()
+        idGenerator = 0
+        channelIdGenerator = 0
+        connectingElementsState.value = false
+        selectedElementState.value = null
         infoElementState.value = null
         showInfoState.value = false
     }

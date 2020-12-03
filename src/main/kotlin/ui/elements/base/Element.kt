@@ -11,12 +11,19 @@ import core.*
 import org.jetbrains.skija.Font
 import org.jetbrains.skija.Typeface
 import ui.core.AppContext
+import ui.core.CHANNEL_DELAY
 import ui.core.RoutingTable
+import ui.elements.ChannelElement
+import ui.elements.ChannelType
 
 interface Element {
     val id: Int
     val type: ElementType
     var pos: Offset
+
+    fun serialize(): Any {
+        return serialization.Element(id, type, pos.x, pos.y)
+    }
 }
 
 abstract class DrawableElement : Element {
@@ -46,7 +53,7 @@ abstract class DrawableElement : Element {
         }
     }
 
-   abstract fun draw(scope: DrawScope, context: AppContext)
+    abstract fun draw(scope: DrawScope, context: AppContext)
 }
 
 abstract class DrawableImageElement : DrawableElement() {
@@ -61,8 +68,10 @@ abstract class DrawableImageElement : DrawableElement() {
 }
 
 interface ConnectableElement : Element {
-    val connectionIds: MutableState<MutableSet<Int>>
+    val channels: MutableState<MutableSet<ChannelElement>>
     val routingTable: RoutingTable
+    val packages: MutableState<MutableList<Package>>
+    val acceptedPackages: MutableState<MutableList<Package>>
 
     fun showRoutingTable(): String {
         return routingTable.toString()
@@ -72,20 +81,52 @@ interface ConnectableElement : Element {
         return Node(id)
     }
 
-    fun sendPackage(pkg: Package, protocol: ProtocolType): Int {
+    fun sendPackages(onSend: () -> Unit) {
+        packages.value.toList().forEach {
+            sendPackage(it)
+        }
+        acceptedPackages.value.toList().forEach {
+            sendPackage(Package(id, it.source, PackageType.SERVICE, it.protocolType, 1))
+        }
+        packages.value = mutableListOf()
+        acceptedPackages.value = mutableListOf()
+    }
+
+    fun sendPackage(pkg: Package): Int { // todo: implement errors
+        // todo: remake this function (no further sends, only one per call)
         if (pkg.destination == id) {
             log("Accepting package $pkg")
-            if (protocol == ProtocolType.TCP && pkg.type == PackageType.INFO) {
-                sendPackage(Package(id, pkg.source, PackageType.SERVICE, 1), protocol)
+            if (pkg.protocolType == ProtocolType.TCP && pkg.type == PackageType.INFO) {
+                sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1))
                 return 1
             }
-        } else {
-            routingTable.table[pkg.destination]?.let {
-                log("Sending package $pkg to ${it.id}")
-                return it.sendPackage(pkg, protocol)
-            } ?: log("Can't send package from node $id to ${pkg.destination}")
+            return 0
         }
-        return 0
+        val nextNode = routingTable.table[pkg.destination]
+        val channel = channels.value.find {
+            it.el1.id == id && it.el2.id == nextNode?.id
+                    || it.el1.id == nextNode?.id && it.el2.id == id
+        }
+        if (nextNode == null || channel == null) {
+            log("Can't send package from node $id to ${pkg.destination}")
+            return 0
+        }
+        nextNode.let {
+            log("Sending package $pkg to ${it.id}")
+            simulateDelay(channel)
+            return it.sendPackage(pkg)
+        }
+//        return 0
+    }
+
+    private fun simulateDelay(channel: ChannelElement) {
+        if (channel.channelType == ChannelType.DUPLEX) {
+            println("Duplex channel, waiting for $CHANNEL_DELAY")
+            Thread.sleep(CHANNEL_DELAY)
+        } else {
+            println("Half duplex channel, waiting for ${CHANNEL_DELAY * 2}")
+            Thread.sleep(CHANNEL_DELAY * 2)
+        }
     }
 }
 

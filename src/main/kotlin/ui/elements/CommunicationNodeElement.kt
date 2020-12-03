@@ -5,10 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.imageFromResource
+import core.Package
+import serialization.Element
+import ui.core.AppContext
 import ui.core.RoutingTable
 import ui.elements.base.ConnectableElement
 import ui.elements.base.DrawableImageElement
-import ui.elements.base.Element
 import ui.elements.base.ElementType
 
 class CommunicationNodeElement : ConnectableElement, DrawableImageElement {
@@ -16,8 +18,10 @@ class CommunicationNodeElement : ConnectableElement, DrawableImageElement {
     override val id: Int
     override var pos: Offset
     override val type: ElementType = ElementType.COMMUNICATION_NODE
-    override val connectionIds: MutableState<MutableSet<Int>> = mutableStateOf(mutableSetOf())
+    override val channels: MutableState<MutableSet<ChannelElement>> = mutableStateOf(mutableSetOf())
     override val routingTable: RoutingTable
+    override val packages: MutableState<MutableList<Package>> = mutableStateOf(mutableListOf())
+    override val acceptedPackages: MutableState<MutableList<Package>> = mutableStateOf(mutableListOf())
 
     override val width: Int = 64
     override val height: Int = 64
@@ -33,8 +37,9 @@ class CommunicationNodeElement : ConnectableElement, DrawableImageElement {
         return "Communication node(Id: $id)"
     }
 
-
-    override fun equals(other: Any?): Boolean {
-        return this === other || id == (other as? Element)?.id && type == (other).type
+    companion object {
+        fun deserialize(el: Element, context: AppContext): CommunicationNodeElement {
+            return CommunicationNodeElement(el.id, Offset(el.x, el.y))
+        }
     }
 }

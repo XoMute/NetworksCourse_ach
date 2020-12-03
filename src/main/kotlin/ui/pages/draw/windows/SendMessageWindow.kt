@@ -1,4 +1,4 @@
-package ui.pages.draw
+package ui.pages.draw.windows
 
 import androidx.compose.desktop.AppWindow
 import androidx.compose.foundation.clickable
