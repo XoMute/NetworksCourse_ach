@@ -1,5 +1,7 @@
 package ui.elements
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.DesktopCanvas
@@ -22,12 +24,14 @@ class ChannelElement(
         var el2: DrawableElement,
         var channelType: ChannelType = ChannelType.DUPLEX,
         var weight: Int = 1,
-        var errorProbability: Float = 0f
+        var errorProbability: Float = 0f,
+        val satellite: Boolean = false
 ) : DrawableElement() {
     override var pos: Offset = Offset.Zero //todo: change
     override val width: Int = 0
     override val height: Int = 0
     override val type = ElementType.CHANNEL
+    var highlighted: Boolean = false
 
     override fun collides(offset: Offset): Boolean {
         return distanceTo(offset) <= THRESHOLD
@@ -52,7 +56,7 @@ class ChannelElement(
     private fun sqr(x: Float): Float = x * x
 
     override fun draw(scope: DrawScope, context: AppContext) {
-        scope.drawLine(Color.Black, el1.center, el2.center, 5f)
+        scope.drawLine(if (highlighted) Color.Red else if (satellite) Color.Blue else Color.Black, el1.center, el2.center, 3f)
         scope.drawIntoCanvas { canvas ->
             (canvas as DesktopCanvas).skija.drawString(weight.toString(),
                     abs((el1.center.x + el2.center.x) / 2f),
@@ -62,7 +66,7 @@ class ChannelElement(
     }
 
     override fun serialize(): Any {
-        return Channel(id, el1.id, el2.id, weight, channelType, errorProbability)
+        return Channel(id, el1.id, el2.id, weight, channelType, errorProbability, satellite)
     }
 
     override fun toString(): String {
@@ -76,7 +80,8 @@ class ChannelElement(
                     context.elementsState.value.find { it.id == channel.el2 }!! as DrawableElement,
                     channel.type,
                     channel.weight,
-                    channel.errorProbability)
+                    channel.errorProbability,
+                    channel.satellite)
         }
     }
 }

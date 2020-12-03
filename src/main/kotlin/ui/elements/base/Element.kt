@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.unit.IntOffset
 import core.*
-import kotlinx.coroutines.delay
 import org.jetbrains.skija.Font
 import org.jetbrains.skija.Typeface
 import ui.core.AppContext
@@ -84,34 +83,87 @@ interface ConnectableElement : Element {
     }
 
     fun sendPackage(pkg: Package, context: AppContext): Int { // todo: implement errors
-        if (pkg.destination == id) {
-            log("Accepting package $pkg")
-            context.packageState.value = null
-            if (pkg.protocolType == ProtocolType.TCP && pkg.type == PackageType.INFO) {
-                sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1), context)
-                return 1
+        if (context.visualSimulationState.value) {
+            while (true) {
+                if (context.playSimulationState.value) {
+                    break
+                } else if (context.stepCountState.value > 0) {
+                    context.stepCountState.value = context.stepCountState.value - 1
+                    break
+                }
+
+                if (!context.visualSimulationState.value) { // simulation was fast-forwarded
+                    return sendPackage(pkg, context)
+                }
+                Thread.sleep(100)
             }
-            return 0
-        }
-        val nextNode = routingTable.table[pkg.destination]
-        val channel = channels.value.find {
-            it.el1.id == id && it.el2.id == nextNode?.id
-                    || it.el1.id == nextNode?.id && it.el2.id == id
-        }
-        if (nextNode == null || channel == null) {
-            log("Can't send package from node $id to ${pkg.destination}")
-            return 0
-        }
-        nextNode.let {
-            log("Sending package $pkg to ${it.id}")
-            simulateDelay(channel, pkg, context)
-            return it.sendPackage(pkg, context)
+            if (pkg.destination == id) {
+                log("Accepting package $pkg")
+                context.packageState.value = null
+                if (pkg.protocolType == ProtocolType.TCP && pkg.type == PackageType.INFO) {
+                    sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1, true), context)
+                    return 1
+                }
+                return 0
+            }
+            val nextNode = routingTable.table[pkg.destination]
+            val channel = channels.value.find {
+                it.el1.id == id && it.el2.id == nextNode?.id
+                        || it.el1.id == nextNode?.id && it.el2.id == id
+            }
+            if (nextNode == null || channel == null) {
+                log("Can't send package from node $id to ${pkg.destination}")
+                return 0
+            }
+            channel.highlighted = true
+            nextNode.let {
+                log("Sending package $pkg to ${it.id}")
+                simulateVisualDelay(channel, pkg, context)
+                return it.sendPackage(pkg, context)
+            }
+        } else {
+            if (pkg.destination == id) {
+                log("Accepting package $pkg")
+                context.packageState.value = null
+                if (pkg.protocolType == ProtocolType.TCP && pkg.type == PackageType.INFO) {
+                    sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1, true), context)
+                    return 1
+                }
+                return 0
+            }
+            val nextNode = routingTable.table[pkg.destination]
+            val channel = channels.value.find {
+                it.el1.id == id && it.el2.id == nextNode?.id
+                        || it.el1.id == nextNode?.id && it.el2.id == id
+            }
+            if (nextNode == null || channel == null) {
+                log("Can't send package from node $id to ${pkg.destination}")
+                return 0
+            }
+            channel.highlighted = true
+            nextNode.let {
+                log("Sending package $pkg to ${it.id}")
+                simulateDelay(channel)
+                return it.sendPackage(pkg, context)
+            }
         }
     }
 
-    private fun simulateDelay(channel: ChannelElement, pkg: Package, context: AppContext) {
-        val delay = CHANNEL_DELAY + channel.weight
-        val delayFraction = delay / SIMULATION_STEPS
+    private fun simulateDelay(channel: ChannelElement) {
+        var delay = channel.weight.toLong()
+        if (channel.channelType == ChannelType.DUPLEX) {
+            println("Duplex channel, waiting for $CHANNEL_DELAY")
+            Thread.sleep(delay)
+        } else {
+            println("Half duplex channel, waiting for ${delay * 2}")
+            delay *= 2
+            Thread.sleep(delay)
+        }
+    }
+
+    private fun simulateVisualDelay(channel: ChannelElement, pkg: Package, context: AppContext) {
+        var delay = CHANNEL_DELAY + channel.weight
+        var delayFraction = delay / SIMULATION_STEPS
         val src = if (channel.el1.id == id) channel.el1.center else channel.el2.center
         val dest = if (channel.el1.id == id) channel.el2.center else channel.el1.center
         if (channel.channelType == ChannelType.DUPLEX) {
@@ -125,8 +177,17 @@ interface ConnectableElement : Element {
                 Thread.sleep(delayFraction)
             }
         } else {
-            println("Half duplex channel, waiting for ${CHANNEL_DELAY * 2}")
-            Thread.sleep(CHANNEL_DELAY * 2)
+            println("Half duplex channel, waiting for ${delay * 2}")
+            delay *= 2
+            delayFraction = delay / SIMULATION_STEPS
+            repeat(SIMULATION_STEPS) {
+                context.packageState.value = DrawablePackage(src,
+                        dest,
+                        pkg.protocolType,
+                        it / SIMULATION_STEPS.toFloat(),
+                        pkg.type)
+                Thread.sleep(delayFraction)
+            }
         }
     }
 }

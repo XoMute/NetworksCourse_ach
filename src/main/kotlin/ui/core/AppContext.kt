@@ -30,6 +30,7 @@ class AppContext {
     val graph: Graph = Graph()
     var workstationIdGenerator: Int = 0
     var channelIdGenerator: Int = 0
+    var satelliteChannelState: MutableState<Boolean> = mutableStateOf(false)
 
     var connectingElementsState: MutableState<Boolean> = mutableStateOf(false) // selected element for connection
     var selectedElementState: MutableState<Element?> = mutableStateOf(null)
@@ -39,6 +40,9 @@ class AppContext {
     var showInfoState: MutableState<Boolean> = mutableStateOf(false)
 
     var packageState: MutableState<DrawablePackage?> = mutableStateOf(null) // state for drawing
+    var visualSimulationState: MutableState<Boolean> = mutableStateOf(false)
+    var playSimulationState: MutableState<Boolean> = mutableStateOf(false)
+    var stepCountState: MutableState<Int> = mutableStateOf(0)
 
     fun onMouseMove(pos: Offset): Boolean {
         mousePosState.value = pos
@@ -107,10 +111,9 @@ class AppContext {
 
     fun sendMessage() {
         val nodes = elementsState.value.filterIsInstance<ConnectableElement>()
-        val lines = elementsState.value.filterIsInstance<ChannelElement>()
         var infoPackages = 0
         var servicePackages = 0
-        SendMessageWindow(nodes, lines) { src, dest, message ->
+        SendMessageWindow(nodes, this) { src, dest, message ->
             GlobalScope.launch {
                 val startTime = System.nanoTime()
                 println("Sending message $message from $src to $dest")
@@ -123,6 +126,7 @@ class AppContext {
                 val time = (endTime - startTime)
                 // todo: show new window with metrics
                 println("Result:\nInfo packages sent: $infoPackages, service packages sent: $servicePackages, time: $time ns")
+                stopVisualSimulation()
             }
         }
     }
@@ -141,7 +145,8 @@ class AppContext {
                 channelIdGenerator++,
                 start as DrawableElement,
                 end as DrawableElement,
-                weight = if (channelWeightState.value == "Random") CHANNEL_WEIGHTS.random() else channelWeightState.value.toInt())
+                weight = if (channelWeightState.value == "Random") CHANNEL_WEIGHTS.random() else channelWeightState.value.toInt(),
+                satellite = satelliteChannelState.value)
         start.channels.value = start.channels.value.apply { add(channel) }.toMutableSet()
         end.channels.value = end.channels.value.apply { add(channel) }.toMutableSet()
         elementsState.value = elementsState.value.toMutableList().apply { // todo: do i need channel in element list?
@@ -201,6 +206,18 @@ class AppContext {
         LoadGraphWindow(this)
     }
 
+    fun startVisualSimulation() {
+        visualSimulationState.value = true
+        playSimulationState.value = false
+        stepCountState.value = 0
+    }
+
+    fun stopVisualSimulation() {
+        visualSimulationState.value = false
+        playSimulationState.value = false
+        stepCountState.value = 0
+    }
+
     fun clear() {
         elementsState.value = mutableListOf()
         selectedTypeState.value = null
@@ -213,5 +230,9 @@ class AppContext {
         infoElementState.value = null
         showInfoState.value = false
         packageState.value = null
+        satelliteChannelState.value = false
+        visualSimulationState.value = false
+        playSimulationState.value = false
+        stepCountState.value = 0
     }
 }

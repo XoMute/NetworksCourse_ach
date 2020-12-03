@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import core.Message
 import core.ProtocolType
+import ui.core.AppContext
 import ui.elements.ChannelElement
 import ui.elements.WorkstationElement
 import ui.elements.base.ConnectableElement
@@ -31,8 +32,8 @@ data class MessageInfoState(
 @OptIn(ExperimentalKeyInput::class)
 fun SendMessageWindow(
         nodes: List<ConnectableElement>,
-        channels: List<ChannelElement>,
-        onSendAction: (Int, Int, Message) -> Unit
+        context: AppContext,
+        onSendAction: (Int, Int, Message) -> Unit,
 ) {
     val window = AppWindow(size = IntSize(400, 600)).also {
         it.keyboard.setShortcut(Key.Escape) {
@@ -161,6 +162,8 @@ fun SendMessageWindow(
                     else -> {
                         errorSourceState.value = false
                         errorDestinationState.value = false
+                        context.visualSimulationState.value = false
+                        context.elementsState.value.filterIsInstance<ChannelElement>().forEach { it.highlighted = false }
                         val message = Message(
                                 size = messageInfoState.value.messageSize,
                                 protocol = messageInfoState.value.protocolType,
@@ -175,6 +178,34 @@ fun SendMessageWindow(
                 }
 
             }, modifier = Modifier.fillMaxWidth()) { Text(text = "Send") }
+            Spacer(Modifier.height(5.dp))
+            Button(onClick = {
+                when {
+                    messageInfoState.value.fromNode == null -> {
+                        errorSourceState.value = true
+                    }
+                    messageInfoState.value.toNode == null -> {
+                        errorDestinationState.value = true
+                    }
+                    else -> {
+                        errorSourceState.value = false
+                        errorDestinationState.value = false
+                        context.elementsState.value.filterIsInstance<ChannelElement>().forEach { it.highlighted = false }
+                        context.startVisualSimulation()
+                        val message = Message(
+                                size = messageInfoState.value.messageSize,
+                                protocol = messageInfoState.value.protocolType,
+                                packageSize = messageInfoState.value.packageSize
+                        )
+                        onSendAction(
+                                messageInfoState.value.fromNode!!.id,
+                                messageInfoState.value.toNode!!.id,
+                                message)
+                        window.close()
+                    }
+                }
+
+            }, modifier = Modifier.fillMaxWidth()) { Text(text = "Simulate") }
         }
     }
 }
@@ -183,7 +214,6 @@ fun SendMessageWindow(
 fun TextBox(text: String = "") {
     Box(
             modifier = Modifier.height(32.dp)
-//                    .background(Color(200, 0, 0, 20))
                     .width(100.dp)
                     .padding(start = 2.dp),
             contentAlignment = Alignment.CenterStart

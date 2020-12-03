@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 import ui.core.AppContext
 import ui.elements.base.ElementType
 
-val INFO_MENU_WIDTH = 300.dp
+val INFO_MENU_WIDTH = 500.dp
 val CONTROL_PANEL_HEIGHT = 100.dp
 
 @Composable

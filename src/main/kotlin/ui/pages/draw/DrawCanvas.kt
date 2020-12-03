@@ -47,7 +47,7 @@ fun DrawCanvas(context: AppContext, modifier: Modifier = Modifier) = Canvas(modi
 fun AppContext.drawChannel(scope: DrawScope) {
     if (selectedTypeState.value == ElementType.CHANNEL && connectingElementsState.value) {
         selectedElementState.value!!.let {
-            scope.drawLine(Color.Black, (it as DrawableElement).center, mousePosState.value, 5f)
+            scope.drawLine(if (satelliteChannelState.value) Color.Blue else Color.Black, (it as DrawableElement).center, mousePosState.value, 3f)
         }
     }
 }

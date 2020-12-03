@@ -11,7 +11,8 @@ data class Package(
         val destination: Int,
         val type: PackageType,
         val protocolType: ProtocolType,
-        val size: Int) {
+        val size: Int,
+        val ret: Boolean = false) {
 }
 
 data class DrawablePackage(
