@@ -84,6 +84,15 @@ interface ConnectableElement : Element {
 
     fun sendPackage(pkg: Package, context: AppContext): Int { // todo: implement errors
         if (context.visualSimulationState.value) {
+            if (pkg.destination == id) {
+                log("Accepting package $pkg")
+                context.packageState.value = null
+                if (pkg.protocolType == ProtocolType.TCP && pkg.type == PackageType.INFO) {
+                    sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1, true), context)
+                    return 1
+                }
+                return 0
+            }
             while (true) {
                 if (context.playSimulationState.value) {
                     break
@@ -96,15 +105,6 @@ interface ConnectableElement : Element {
                     return sendPackage(pkg, context)
                 }
                 Thread.sleep(100)
-            }
-            if (pkg.destination == id) {
-                log("Accepting package $pkg")
-                context.packageState.value = null
-                if (pkg.protocolType == ProtocolType.TCP && pkg.type == PackageType.INFO) {
-                    sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1, true), context)
-                    return 1
-                }
-                return 0
             }
             val nextNode = routingTable.table[pkg.destination]
             val channel = channels.value.find {
