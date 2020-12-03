@@ -38,15 +38,10 @@ fun DrawCanvas(context: AppContext, modifier: Modifier = Modifier) = Canvas(modi
                 return dragDistance
             }
         })
-        /*.dragGestureFilter(dragObserver = object : DragObserver { // todo
-            override fun onDrag(dragDistance: Offset): Offset {
-                context.drag(dragDistance)
-                return dragDistance
-            }
-        })*/
 ) {
     context.elementsState.value.forEach { (it as DrawableElement).draw(this, context) }
     context.drawChannel(this)
+    context.packageState.value?.draw(this)
 }
 
 fun AppContext.drawChannel(scope: DrawScope) {

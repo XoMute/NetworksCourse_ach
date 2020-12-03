@@ -8,11 +8,13 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.unit.IntOffset
 import core.*
+import kotlinx.coroutines.delay
 import org.jetbrains.skija.Font
 import org.jetbrains.skija.Typeface
 import ui.core.AppContext
 import ui.core.CHANNEL_DELAY
 import ui.core.RoutingTable
+import ui.core.SIMULATION_STEPS
 import ui.elements.ChannelElement
 import ui.elements.ChannelType
 
@@ -81,23 +83,12 @@ interface ConnectableElement : Element {
         return Node(id)
     }
 
-    fun sendPackages(onSend: () -> Unit) {
-        packages.value.toList().forEach {
-            sendPackage(it)
-        }
-        acceptedPackages.value.toList().forEach {
-            sendPackage(Package(id, it.source, PackageType.SERVICE, it.protocolType, 1))
-        }
-        packages.value = mutableListOf()
-        acceptedPackages.value = mutableListOf()
-    }
-
-    fun sendPackage(pkg: Package): Int { // todo: implement errors
-        // todo: remake this function (no further sends, only one per call)
+    fun sendPackage(pkg: Package, context: AppContext): Int { // todo: implement errors
         if (pkg.destination == id) {
             log("Accepting package $pkg")
+            context.packageState.value = null
             if (pkg.protocolType == ProtocolType.TCP && pkg.type == PackageType.INFO) {
-                sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1))
+                sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1), context)
                 return 1
             }
             return 0
@@ -113,16 +104,26 @@ interface ConnectableElement : Element {
         }
         nextNode.let {
             log("Sending package $pkg to ${it.id}")
-            simulateDelay(channel)
-            return it.sendPackage(pkg)
+            simulateDelay(channel, pkg, context)
+            return it.sendPackage(pkg, context)
         }
-//        return 0
     }
 
-    private fun simulateDelay(channel: ChannelElement) {
+    private fun simulateDelay(channel: ChannelElement, pkg: Package, context: AppContext) {
+        val delay = CHANNEL_DELAY + channel.weight
+        val delayFraction = delay / SIMULATION_STEPS
+        val src = if (channel.el1.id == id) channel.el1.center else channel.el2.center
+        val dest = if (channel.el1.id == id) channel.el2.center else channel.el1.center
         if (channel.channelType == ChannelType.DUPLEX) {
             println("Duplex channel, waiting for $CHANNEL_DELAY")
-            Thread.sleep(CHANNEL_DELAY)
+            repeat(SIMULATION_STEPS) {
+                context.packageState.value = DrawablePackage(src,
+                        dest,
+                        pkg.protocolType,
+                        it / SIMULATION_STEPS.toFloat(),
+                        pkg.type)
+                Thread.sleep(delayFraction)
+            }
         } else {
             println("Half duplex channel, waiting for ${CHANNEL_DELAY * 2}")
             Thread.sleep(CHANNEL_DELAY * 2)

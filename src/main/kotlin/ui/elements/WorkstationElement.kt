@@ -29,8 +29,8 @@ class WorkstationElement : ConnectableElement, DrawableImageElement {
         this.routingTable = RoutingTable()
     }
 
-    override val width: Int = 64
-    override val height: Int = 64
+    override val width: Int = 32
+    override val height: Int = 32
 
     override val image: ImageBitmap = imageFromResource("workstation.png")
 

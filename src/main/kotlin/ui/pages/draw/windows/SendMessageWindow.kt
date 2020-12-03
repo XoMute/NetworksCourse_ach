@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import core.Message
 import core.ProtocolType
 import ui.elements.ChannelElement
+import ui.elements.WorkstationElement
 import ui.elements.base.ConnectableElement
 
 data class MessageInfoState(
@@ -33,7 +34,7 @@ fun SendMessageWindow(
         channels: List<ChannelElement>,
         onSendAction: (Int, Int, Message) -> Unit
 ) {
-    val window = AppWindow(size = IntSize(400, 400)).also {
+    val window = AppWindow(size = IntSize(400, 600)).also {
         it.keyboard.setShortcut(Key.Escape) {
             it.close()
         }
@@ -61,7 +62,7 @@ fun SendMessageWindow(
                             expanded = sourceNodeState.value,
                             onDismissRequest = { sourceNodeState.value = false }
                     ) {
-                        for (node in nodes) {
+                        for (node in nodes.filterIsInstance<WorkstationElement>()) {
                             DropdownMenuItem(
                                     onClick = {
                                         errorSourceState.value = false
@@ -87,7 +88,7 @@ fun SendMessageWindow(
                             expanded = destinationNodeState.value,
                             onDismissRequest = { destinationNodeState.value = false }
                     ) {
-                        for (node in nodes) {
+                        for (node in nodes.filterIsInstance<WorkstationElement>()) {
                             DropdownMenuItem(
                                     onClick = {
                                         errorDestinationState.value = false

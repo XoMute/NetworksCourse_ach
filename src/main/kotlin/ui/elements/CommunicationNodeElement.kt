@@ -23,8 +23,8 @@ class CommunicationNodeElement : ConnectableElement, DrawableImageElement {
     override val packages: MutableState<MutableList<Package>> = mutableStateOf(mutableListOf())
     override val acceptedPackages: MutableState<MutableList<Package>> = mutableStateOf(mutableListOf())
 
-    override val width: Int = 64
-    override val height: Int = 64
+    override val width: Int = 32
+    override val height: Int = 32
     override val image: ImageBitmap = imageFromResource("router.png")
 
     constructor(id: Int, pos: Offset) {

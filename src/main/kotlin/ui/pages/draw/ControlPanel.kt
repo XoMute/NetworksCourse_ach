@@ -87,15 +87,22 @@ fun ControlPanel(context: AppContext) {
                 Text(text = "Send Message")
             }
             Spacer(modifier = Modifier
-                    .width(400.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Button(onClick = { context.dumpGraph() }) {
+                    .width(200.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.width(200.dp)) {
+                Button(onClick = { context.dumpGraph() }, modifier = Modifier.fillMaxWidth()) {
                     Text(text = "Dump graph")
                 }
                 Spacer(modifier = Modifier
                         .width(100.dp))
-                Button(onClick = { context.loadGraph() }) {
+                Button(onClick = { context.loadGraph() }, modifier = Modifier.fillMaxWidth()) {
                     Text(text = "Load graph")
+                }
+            }
+            Spacer(modifier = Modifier
+                    .width(200.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.width(100.dp)) {
+                Button(onClick = { context.clear() }, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "Clear")
                 }
             }
         }

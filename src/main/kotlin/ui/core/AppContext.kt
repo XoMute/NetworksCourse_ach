@@ -1,10 +1,12 @@
 package ui.core
 
-import androidx.compose.desktop.Window
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
+import core.DrawablePackage
 import core.Graph
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import ui.elements.CommunicationNodeElement
 import ui.elements.ChannelElement
 import ui.elements.WorkstationElement
@@ -16,8 +18,8 @@ import ui.pages.draw.windows.DumpGraphWindow
 import ui.pages.draw.windows.LoadGraphWindow
 import ui.pages.draw.windows.SendMessageWindow
 
-const val CHANNEL_DELAY = 5L // in milliseconds
-const val SIMULATION_DELAY = 100L
+const val CHANNEL_DELAY = 300L // in milliseconds
+const val SIMULATION_STEPS = 50
 
 val CHANNEL_WEIGHTS: List<Int> = listOf(1, 3, 5, 7, 8, 11, 12, 15, 18, 21, 25, 27, 32)
 
@@ -26,8 +28,8 @@ class AppContext {
     val elementsState: MutableState<MutableList<Element>> = mutableStateOf(mutableListOf())
     val channelWeightState = mutableStateOf("Random")
     val graph: Graph = Graph()
-    private var idGenerator: Int = 0
-    private var channelIdGenerator: Int = 0
+    var workstationIdGenerator: Int = 0
+    var channelIdGenerator: Int = 0
 
     var connectingElementsState: MutableState<Boolean> = mutableStateOf(false) // selected element for connection
     var selectedElementState: MutableState<Element?> = mutableStateOf(null)
@@ -35,6 +37,8 @@ class AppContext {
     var mousePosState: MutableState<Offset> = mutableStateOf(Offset.Zero)
 
     var showInfoState: MutableState<Boolean> = mutableStateOf(false)
+
+    var packageState: MutableState<DrawablePackage?> = mutableStateOf(null) // state for drawing
 
     fun onMouseMove(pos: Offset): Boolean {
         mousePosState.value = pos
@@ -55,7 +59,11 @@ class AppContext {
             if (selectedTypeState.value == ElementType.CHANNEL) {
                 if (el !is ChannelElement) {
                     if (connectingElementsState.value) {
-                        createConnection(selectedElementState.value!! as ConnectableElement, el as ConnectableElement)
+                        if (el.id == selectedElementState.value!!.id) {
+                            dropConnection()
+                        } else {
+                            createConnection(selectedElementState.value!! as ConnectableElement, el as ConnectableElement)
+                        }
                     } else {
                         startConnection(el as ConnectableElement)
                     }
@@ -75,12 +83,12 @@ class AppContext {
             elementsState.value = elementsState.value.toMutableList().apply {
                 when (it) {
                     ElementType.WORKSTATION -> {
-                        val workstation = WorkstationElement(idGenerator++, pos)
+                        val workstation = WorkstationElement(workstationIdGenerator++, pos)
                         add(workstation)
                         graph.addNode(workstation)
                     }
                     ElementType.COMMUNICATION_NODE -> {
-                        val commNode = CommunicationNodeElement(idGenerator++, pos)
+                        val commNode = CommunicationNodeElement(workstationIdGenerator++, pos)
                         add(commNode)
                         graph.addNode(commNode)
 
@@ -103,18 +111,19 @@ class AppContext {
         var infoPackages = 0
         var servicePackages = 0
         SendMessageWindow(nodes, lines) { src, dest, message ->
-            // todo: start simulation with ticks (which somehow will not block ui so that we can pause or fast-forward it)
-            val startTime = System.nanoTime()
-            println("Sending message $message from $src to $dest")
-            // todo: if tcp - handshake (+ 2 service packages)
-            message.splitIntoPackages(src, dest).forEach {
-                servicePackages += nodes.node(src).sendPackage(it)
-                infoPackages++
+            GlobalScope.launch {
+                val startTime = System.nanoTime()
+                println("Sending message $message from $src to $dest")
+                // todo: if tcp - handshake (+ 2 service packages)
+                message.splitIntoPackages(src, dest).forEach {
+                    servicePackages += nodes.node(src).sendPackage(it, this@AppContext)
+                    infoPackages++
+                }
+                val endTime = System.nanoTime()
+                val time = (endTime - startTime)
+                // todo: show new window with metrics
+                println("Result:\nInfo packages sent: $infoPackages, service packages sent: $servicePackages, time: $time ns")
             }
-            val endTime = System.nanoTime()
-            val time = (endTime - startTime)
-            // todo: show new window with metrics
-            println("Result:\nInfo packages sent: $infoPackages, service packages sent: $servicePackages, time: $time ns")
         }
     }
 
@@ -197,11 +206,12 @@ class AppContext {
         selectedTypeState.value = null
         channelWeightState.value = "Random"
         graph.clear()
-        idGenerator = 0
+        workstationIdGenerator = 0
         channelIdGenerator = 0
         connectingElementsState.value = false
         selectedElementState.value = null
         infoElementState.value = null
         showInfoState.value = false
+        packageState.value = null
     }
 }
