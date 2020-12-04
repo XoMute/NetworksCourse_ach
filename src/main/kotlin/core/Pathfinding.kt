@@ -5,6 +5,7 @@ import java.util.*
 
 data class Node(val id: Int) {
     var shortestPath: List<Node> = mutableListOf()
+    var enabled: Boolean = true
     val realPath: List<Node>
         get() {
             return if (shortestPath.isEmpty()) {
@@ -38,6 +39,9 @@ class Graph {
     fun calculateShortestPathFromSource(nodeId: Int) {
         setupNodes()
         val sourceNode = nodes.find { it.id == nodeId }!!
+        if (!sourceNode.enabled) {
+            return // todo: remove
+        }
 
         sourceNode.distance = 0
         val settledNodes: MutableSet<Node> = mutableSetOf()
@@ -45,16 +49,18 @@ class Graph {
         unsettledNodes.add(sourceNode)
 
         while (unsettledNodes.isNotEmpty()) {
-            val currentNode = unsettledNodes.minBy { it.distance }!!
+            val currentNode = unsettledNodes.minByOrNull { it.distance }!!
             unsettledNodes.remove(currentNode)
-            currentNode.adjacentNodes.entries.forEach {
-                val adjacentNode = it.key
-                val edgeWeight = it.value
-                if (!settledNodes.contains(currentNode)) {
-                    calculateMinimumDistance(adjacentNode, edgeWeight, currentNode)
-                    unsettledNodes.add(adjacentNode)
-                }
-            }
+            currentNode.adjacentNodes.entries
+                    .filter { it.key.enabled }
+                    .forEach {
+                        val adjacentNode = it.key
+                        val edgeWeight = it.value
+                        if (!settledNodes.contains(currentNode)) {
+                            calculateMinimumDistance(adjacentNode, edgeWeight, currentNode)
+                            unsettledNodes.add(adjacentNode)
+                        }
+                    }
             settledNodes.add(currentNode)
         }
     }
@@ -75,6 +81,27 @@ class Graph {
 
     private fun setupNodes() {
         nodes.forEach { it.distance = Int.MAX_VALUE; it.shortestPath = emptyList(); }
+    }
+
+    fun disableNode(id: Int) {
+        nodes.find { it.id == id }!!.enabled = false
+        val node = nodes.find { it.id == id }!!
+        node.enabled = false
+        node.adjacentNodes.forEach {
+            it.key.adjacentNodes.remove(node)
+        }
+    }
+
+    fun enableNode(id: Int) {
+        nodes.find { it.id == id }!!.enabled = true
+    }
+
+    fun deleteNode(id: Int) {
+        val node = nodes.find { it.id == id }!!
+        node.adjacentNodes.forEach {
+            it.key.adjacentNodes.remove(node)
+        }
+        nodes.removeIf { it.id == id }
     }
 }
 

@@ -22,6 +22,7 @@ class WorkstationElement : ConnectableElement, DrawableImageElement {
     override val routingTable: RoutingTable
     override val packages: MutableState<MutableList<Package>> = mutableStateOf(mutableListOf())
     override val acceptedPackages: MutableState<MutableList<Package>> = mutableStateOf(mutableListOf())
+    override var enabled: Boolean = true
 
     constructor(id: Int, pos: Offset) {
         this.id = id

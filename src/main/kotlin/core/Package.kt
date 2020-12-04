@@ -36,5 +36,5 @@ data class DrawablePackage(
 }
 
 enum class PackageType {
-    INFO, SERVICE
+    INFO, SERVICE, ROUTING
 }

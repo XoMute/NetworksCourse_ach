@@ -16,4 +16,11 @@ class RoutingTable {
     override fun toString(): String {
         return table.toString()
     }
+
+    fun clear(id: Int, context: AppContext) {
+//        table.keys.forEach { key ->
+//            (context.elementsState.value.find { it.id == key }!! as ConnectableElement).routingTable.table.remove(id)
+//        }
+        table.clear()
+    }
 }

@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.DesktopCanvas
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import serialization.Channel
-import serialization.Element
 import ui.core.AppContext
 import ui.elements.base.DrawableElement
 import ui.elements.base.ElementType
@@ -28,10 +27,11 @@ class ChannelElement(
         val satellite: Boolean = false
 ) : DrawableElement() {
     override var pos: Offset = Offset.Zero //todo: change
+    override var enabled: Boolean = true
     override val width: Int = 0
     override val height: Int = 0
     override val type = ElementType.CHANNEL
-    var highlighted: Boolean = false
+    var highlightedState: MutableState<Boolean> = mutableStateOf(false)
 
     override fun collides(offset: Offset): Boolean {
         return distanceTo(offset) <= THRESHOLD
@@ -56,7 +56,7 @@ class ChannelElement(
     private fun sqr(x: Float): Float = x * x
 
     override fun draw(scope: DrawScope, context: AppContext) {
-        scope.drawLine(if (highlighted) Color.Red else if (satellite) Color.Blue else Color.Black, el1.center, el2.center, 3f)
+        scope.drawLine(if (highlightedState.value) Color.Red else if (satellite) Color.Blue else Color.Black, el1.center, el2.center, 3f)
         scope.drawIntoCanvas { canvas ->
             (canvas as DesktopCanvas).skija.drawString(weight.toString(),
                     abs((el1.center.x + el2.center.x) / 2f),

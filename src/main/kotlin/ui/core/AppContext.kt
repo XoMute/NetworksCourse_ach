@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import core.DrawablePackage
 import core.Graph
+import core.Message
+import core.ProtocolType
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import ui.elements.CommunicationNodeElement
@@ -16,9 +18,12 @@ import ui.elements.base.Element
 import ui.elements.base.ElementType
 import ui.pages.draw.windows.DumpGraphWindow
 import ui.pages.draw.windows.LoadGraphWindow
+import ui.pages.draw.windows.SendMessageResultWindow
 import ui.pages.draw.windows.SendMessageWindow
+import javax.swing.SwingUtilities
 
-const val CHANNEL_DELAY = 300L // in milliseconds
+const val CHANNEL_DELAY = 10 // in nanoseconds
+const val SIMULATION_DELAY = 300L // in milliseconds
 const val SIMULATION_STEPS = 50
 
 val CHANNEL_WEIGHTS: List<Int> = listOf(1, 3, 5, 7, 8, 11, 12, 15, 18, 21, 25, 27, 32)
@@ -43,6 +48,8 @@ class AppContext {
     var visualSimulationState: MutableState<Boolean> = mutableStateOf(false)
     var playSimulationState: MutableState<Boolean> = mutableStateOf(false)
     var stepCountState: MutableState<Int> = mutableStateOf(0)
+
+    var virtualState: MutableState<Boolean> = mutableStateOf(false)
 
     fun onMouseMove(pos: Offset): Boolean {
         mousePosState.value = pos
@@ -113,7 +120,9 @@ class AppContext {
         val nodes = elementsState.value.filterIsInstance<ConnectableElement>()
         var infoPackages = 0
         var servicePackages = 0
+        var time = 0L
         SendMessageWindow(nodes, this) { src, dest, message ->
+            virtualState.value = message.protocol == ProtocolType.VIRTUAL
             GlobalScope.launch {
                 val startTime = System.nanoTime()
                 println("Sending message $message from $src to $dest")
@@ -123,10 +132,13 @@ class AppContext {
                     infoPackages++
                 }
                 val endTime = System.nanoTime()
-                val time = (endTime - startTime)
+                time = (endTime - startTime)
                 // todo: show new window with metrics
                 println("Result:\nInfo packages sent: $infoPackages, service packages sent: $servicePackages, time: $time ns")
                 stopVisualSimulation()
+                SwingUtilities.invokeLater {
+                    SendMessageResultWindow(message, infoPackages, servicePackages, time / 1_000_000)
+                }
             }
         }
     }
@@ -159,10 +171,17 @@ class AppContext {
     }
 
     fun updateRouteTables() {
+        if (virtualState.value) {
+            return
+        }
         val connectableElems: List<ConnectableElement> = elementsState.value.filterIsInstance<ConnectableElement>()
         connectableElems
                 .filter { it.channels.value.isNotEmpty() } // todo: calculate only for connected and active nodes
                 .map { x ->
+                    if (!x.enabled) {
+                        x.routingTable.clear(x.id, this)
+                        return@map
+                    }
                     graph.calculateShortestPathFromSource(x.id)
                     connectableElems.forEach { y ->
                         val path = graph.nodes.find { node -> node.id == y.id }!!.realPath.map { it.id }
@@ -176,6 +195,33 @@ class AppContext {
                         }
                     }
                 }
+        removeHighlight()
+    }
+
+    fun disableNode(id: Int) {
+        val node = elementsState.value.find { it.id == id }!! as ConnectableElement
+        node.enabled = false
+        graph.disableNode(id)
+        updateRouteTables()
+    }
+
+    fun enableNode(id: Int) {
+        elementsState.value.find {it.id == id}!!.enabled = true
+        graph.enableNode(id)
+        updateRouteTables()
+    }
+
+    fun deleteNode(id: Int) {
+        val node = elementsState.value.find {it.id == id}!!
+        elementsState.value.filterIsInstance<ChannelElement>().forEach { ch ->
+            if (ch.el1.id == id || ch.el2.id == id) {
+                elementsState.value.removeIf { it == ch }
+            }
+        }
+        elementsState.value.remove(node)
+        graph.deleteNode(id)
+        stopShowingInfo()
+        updateRouteTables()
     }
 
     private fun List<ConnectableElement>.node(id: Int): ConnectableElement {
@@ -197,6 +243,9 @@ class AppContext {
         showInfoState.value = false
     }
 
+    fun removeHighlight() {
+        elementsState.value.filterIsInstance<ChannelElement>().forEach { it.highlightedState.value = false }
+    }
 
     fun dumpGraph() {
         DumpGraphWindow(elementsState.value)
@@ -215,6 +264,7 @@ class AppContext {
     fun stopVisualSimulation() {
         visualSimulationState.value = false
         playSimulationState.value = false
+        virtualState.value = false
         stepCountState.value = 0
     }
 
@@ -234,5 +284,6 @@ class AppContext {
         visualSimulationState.value = false
         playSimulationState.value = false
         stepCountState.value = 0
+        virtualState.value = false
     }
 }

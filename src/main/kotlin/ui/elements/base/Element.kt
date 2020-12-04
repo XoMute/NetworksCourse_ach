@@ -10,10 +10,7 @@ import androidx.compose.ui.unit.IntOffset
 import core.*
 import org.jetbrains.skija.Font
 import org.jetbrains.skija.Typeface
-import ui.core.AppContext
-import ui.core.CHANNEL_DELAY
-import ui.core.RoutingTable
-import ui.core.SIMULATION_STEPS
+import ui.core.*
 import ui.elements.ChannelElement
 import ui.elements.ChannelType
 
@@ -21,6 +18,7 @@ interface Element {
     val id: Int
     val type: ElementType
     var pos: Offset
+    var enabled: Boolean
 
     fun serialize(): Any {
         return serialization.Element(id, type, pos.x, pos.y)
@@ -31,12 +29,14 @@ abstract class DrawableElement : Element {
     abstract val width: Int
     abstract val height: Int
 
-    val center: Offset by lazy {
-        Offset(pos.x + width / 2f, pos.y + height / 2f)
+    val center: Offset
+    get() {
+        return Offset(pos.x + width / 2f, pos.y + height / 2f)
     }
 
-    private val rect: Rect by lazy {
-        Rect(topLeft = pos, bottomRight = Offset(x = pos.x + width, y = pos.y + height))
+    private val rect: Rect
+    get() {
+        return Rect(topLeft = pos, bottomRight = Offset(x = pos.x + width, y = pos.y + height))
     }
 
     open fun collides(offset: Offset): Boolean {
@@ -61,7 +61,8 @@ abstract class DrawableImageElement : DrawableElement() {
     abstract val image: ImageBitmap
 
     override fun draw(scope: DrawScope, context: AppContext) {
-        scope.drawImage(image, dstOffset = IntOffset(pos.x.toInt(), pos.y.toInt()))
+        scope.drawImage(image, dstOffset = IntOffset(pos.x.toInt(), pos.y.toInt()),
+                colorFilter = if (!enabled) ColorFilter(Color.Gray, BlendMode.Color) else null)
         scope.drawIntoCanvas { canvas ->
             (canvas as DesktopCanvas).skija.drawString(id.toString(), center.x, center.y - height * 0.6f, skiaFont, paint.asFrameworkPaint())
         }
@@ -82,10 +83,13 @@ interface ConnectableElement : Element {
         return Node(id)
     }
 
+    /**
+     * returns: number of service packages returned
+     */
     fun sendPackage(pkg: Package, context: AppContext): Int { // todo: implement errors
         if (context.visualSimulationState.value) {
             if (pkg.destination == id) {
-                log("Accepting package $pkg")
+//                log("Accepting package $pkg")
                 context.packageState.value = null
                 if (pkg.protocolType == ProtocolType.TCP && pkg.type == PackageType.INFO) {
                     sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1, true), context)
@@ -111,19 +115,19 @@ interface ConnectableElement : Element {
                 it.el1.id == id && it.el2.id == nextNode?.id
                         || it.el1.id == nextNode?.id && it.el2.id == id
             }
-            if (nextNode == null || channel == null) {
-                log("Can't send package from node $id to ${pkg.destination}")
+            if (nextNode == null || channel == null || !channel.el1.enabled || !channel.el2.enabled) {
+                log("Can't send package from node $id to ${pkg.destination}") // todo: stop simulation
                 return 0
             }
-            channel.highlighted = true
+            channel.highlightedState.value = true
             nextNode.let {
-                log("Sending package $pkg to ${it.id}")
+//                log("Sending package $pkg to ${it.id}")
                 simulateVisualDelay(channel, pkg, context)
                 return it.sendPackage(pkg, context)
             }
         } else {
             if (pkg.destination == id) {
-                log("Accepting package $pkg")
+//                log("Accepting package $pkg")
                 context.packageState.value = null
                 if (pkg.protocolType == ProtocolType.TCP && pkg.type == PackageType.INFO) {
                     sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1, true), context)
@@ -137,12 +141,12 @@ interface ConnectableElement : Element {
                         || it.el1.id == nextNode?.id && it.el2.id == id
             }
             if (nextNode == null || channel == null) {
-                log("Can't send package from node $id to ${pkg.destination}")
+                log("Can't send package from node $id to ${pkg.destination}") // todo: stop simulation
                 return 0
             }
-            channel.highlighted = true
+            channel.highlightedState.value = true
             nextNode.let {
-                log("Sending package $pkg to ${it.id}")
+//                log("Sending package $pkg to ${it.id}")
                 simulateDelay(channel)
                 return it.sendPackage(pkg, context)
             }
@@ -150,24 +154,24 @@ interface ConnectableElement : Element {
     }
 
     private fun simulateDelay(channel: ChannelElement) {
-        var delay = channel.weight.toLong()
+        var delay = CHANNEL_DELAY + channel.weight
         if (channel.channelType == ChannelType.DUPLEX) {
-            println("Duplex channel, waiting for $CHANNEL_DELAY")
-            Thread.sleep(delay)
+//            println("Duplex channel, waiting for $delay")
+            Thread.sleep(0L, delay)
         } else {
-            println("Half duplex channel, waiting for ${delay * 2}")
+//            println("Half duplex channel, waiting for ${delay * 2}")
             delay *= 2
-            Thread.sleep(delay)
+            Thread.sleep(0L, delay)
         }
     }
 
     private fun simulateVisualDelay(channel: ChannelElement, pkg: Package, context: AppContext) {
-        var delay = CHANNEL_DELAY + channel.weight
+        var delay = SIMULATION_DELAY + channel.weight
         var delayFraction = delay / SIMULATION_STEPS
         val src = if (channel.el1.id == id) channel.el1.center else channel.el2.center
         val dest = if (channel.el1.id == id) channel.el2.center else channel.el1.center
         if (channel.channelType == ChannelType.DUPLEX) {
-            println("Duplex channel, waiting for $CHANNEL_DELAY")
+//            println("Duplex channel, waiting for $delay")
             repeat(SIMULATION_STEPS) {
                 context.packageState.value = DrawablePackage(src,
                         dest,
@@ -177,7 +181,7 @@ interface ConnectableElement : Element {
                 Thread.sleep(delayFraction)
             }
         } else {
-            println("Half duplex channel, waiting for ${delay * 2}")
+//            println("Half duplex channel, waiting for ${delay * 2}")
             delay *= 2
             delayFraction = delay / SIMULATION_STEPS
             repeat(SIMULATION_STEPS) {

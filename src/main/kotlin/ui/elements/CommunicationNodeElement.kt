@@ -22,6 +22,7 @@ class CommunicationNodeElement : ConnectableElement, DrawableImageElement {
     override val routingTable: RoutingTable
     override val packages: MutableState<MutableList<Package>> = mutableStateOf(mutableListOf())
     override val acceptedPackages: MutableState<MutableList<Package>> = mutableStateOf(mutableListOf())
+    override var enabled: Boolean = true
 
     override val width: Int = 32
     override val height: Int = 32

@@ -3,17 +3,18 @@ package core
 data class Message(
         val size: Int,
         val protocol: ProtocolType,
-        val packageSize: Int
+        val packageSize: Int,
+        val servicePackageSize: Int
 ) {
 
-    fun splitIntoPackages(src: Int, dst: Int, pkgType: PackageType = PackageType.INFO): List<Package> { // todo: remove package type argument
+    fun splitIntoPackages(src: Int, dst: Int): List<Package> {
         val packages = mutableListOf<Package>()
         val n = size / packageSize
         repeat(n) {
-            packages.add(Package(src, dst, pkgType, protocol, packageSize))
+            packages.add(Package(src, dst, PackageType.INFO, protocol, packageSize))
         }
         if (size % packageSize > 0) {
-            packages.add(Package(src, dst, pkgType, protocol, size % packageSize))
+            packages.add(Package(src, dst, PackageType.INFO, protocol, size % packageSize))
         }
         return packages
     }
