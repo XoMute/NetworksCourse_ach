@@ -13,6 +13,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.imageFromResource
 import androidx.compose.ui.unit.dp
+import core.ProtocolType
 import ui.core.AppContext
 import ui.core.CHANNEL_WEIGHTS
 import ui.elements.ChannelElement
@@ -172,10 +173,36 @@ fun ChannelDetailsMenu(context: AppContext) {
                 .fillMaxWidth()
                 .height(10.dp))
         Column {
+            Text("Channel type: ")
+            Row {
+                TextBox("Duplex")
+                Checkbox(checked = channelInfoState.value.type == ChannelType.DUPLEX, onCheckedChange = {
+                    channelInfoState.value = channelInfoState.value.copy(type = ChannelType.DUPLEX)
+                    if (channelInfoState.value.type != elem.channelType) {
+                        changedState.value = true
+                    }
+                })
+            }
+            Row {
+                TextBox("Half-duplex")
+                Checkbox(checked = channelInfoState.value.type == ChannelType.HALF_DUPLEX, onCheckedChange = {
+                    channelInfoState.value = channelInfoState.value.copy(type = ChannelType.HALF_DUPLEX)
+                    if (channelInfoState.value.type != elem.channelType) {
+                        changedState.value = true
+                    }
+                })
+            }
+        }
+        Spacer(Modifier
+                .fillMaxWidth()
+                .height(10.dp))
+        Column {
             Text("Enabled")
             Switch(checked = channelInfoState.value.enabled, onCheckedChange = {
                 channelInfoState.value = channelInfoState.value.copy(enabled = it)
-                changedState.value = true
+                if (channelInfoState.value.enabled != elem.enabled) {
+                    changedState.value = true
+                }
             })
         }
         Spacer(Modifier
@@ -186,7 +213,9 @@ fun ChannelDetailsMenu(context: AppContext) {
             Slider(value = channelInfoState.value.errorProbability,
                     onValueChange = {
                         channelInfoState.value = channelInfoState.value.copy(errorProbability = it)
-                        changedState.value = true
+                        if (channelInfoState.value.errorProbability != elem.errorProbability) {
+                            changedState.value = true
+                        }
                     })
         }
 
