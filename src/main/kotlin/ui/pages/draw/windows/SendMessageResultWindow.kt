@@ -33,14 +33,13 @@ fun SendMessageResultWindow(
     window.show {
         MaterialTheme(colors = colors) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-
                 Row(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 3f), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Message size", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
+                        Text(text = "Message size(bytes)", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
                         TextBox(message.size.toString())
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 3f), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Package size", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
+                        Text(text = "Package size(bytes)", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
                         TextBox(message.packageSize.toString())
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 3f), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -60,6 +59,16 @@ fun SendMessageResultWindow(
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 3f), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Time (ms)", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
                         TextBox(time.toString())
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 2f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Total info traffic(bytes)", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
+                        TextBox((infoPackages * message.packageSize).toString())
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 2f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Total service traffic(bytes)", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
+                        TextBox((servicePackages * message.servicePackageSize).toString())
                     }
                 }
             }

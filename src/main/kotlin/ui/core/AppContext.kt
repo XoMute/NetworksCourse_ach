@@ -1,18 +1,19 @@
 package ui.core
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.geometry.Offset
 import core.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import ui.elements.CommunicationNodeElement
 import ui.elements.ChannelElement
 import ui.elements.WorkstationElement
 import ui.elements.base.*
 import ui.pages.draw.windows.*
-import java.lang.RuntimeException
 import javax.swing.SwingUtilities
+import kotlin.random.Random
 
 const val CHANNEL_DELAY = 10 // in nanoseconds
 const val SIMULATION_DELAY = 300L // in milliseconds
@@ -36,8 +37,11 @@ class AppContext {
 
     var showInfoState: MutableState<Boolean> = mutableStateOf(false)
 
-    var packageState: MutableState<DrawablePackage?> = mutableStateOf(null) // state for drawing
+    //    var packagesState: MutableState<Map<Int, DrawablePackage?>> = mutableStateOf(mutableMapOf()) // state for drawing
+    var packagesState: SnapshotStateMap<Int, DrawablePackage?> = mutableStateMapOf() // state for drawing
     var visualSimulationState: MutableState<Boolean> = mutableStateOf(false)
+    val sendMessageButtonState: MutableState<Boolean> = mutableStateOf(true)
+
     var playSimulationState: MutableState<Boolean> = mutableStateOf(false)
     var stepCountState: MutableState<Int> = mutableStateOf(0)
 
@@ -115,6 +119,8 @@ class AppContext {
         var time = 0L
         SendMessageWindow(nodes, this) { src, dest, message ->
             virtualState.value = message.protocol == ProtocolType.VIRTUAL
+            // todo: get visualization id and pass it to package
+
             GlobalScope.launch {
                 val startTime = System.nanoTime()
                 println("Sending message $message from $src to $dest")
@@ -125,21 +131,48 @@ class AppContext {
                         nodes.node(dest).sendPackage(Package(dest, src, PackageType.SERVICE, message.protocol, message.servicePackageSize), this@AppContext)
                         servicePackages += 2
                     }
-
-                    message.splitIntoPackages(src, dest).forEach {
-                        var sent = false
-                        while (!sent) {
-                            try {
-                                val retValue = nodes.node(src).sendPackage(it, this@AppContext)
-                                sent = true
-                                servicePackages += retValue
-                                infoPackages++
-                            } catch (e: ChannelErrorException) {
-                                infoPackages++
-                                servicePackages++
-                                continue
+                    if (message.protocol.directConnection()) {
+                        message.splitIntoPackages(src, dest).forEach {
+                            var sent = false
+                            while (!sent) {
+                                try {
+                                    val retValue = nodes.node(src).sendPackage(it, this@AppContext)
+                                    sent = true
+                                    servicePackages += retValue
+                                    infoPackages++
+                                } catch (e: ChannelErrorException) {
+                                    infoPackages++
+                                    servicePackages++
+                                    continue
+                                }
                             }
                         }
+                    } else {
+                        val coroutines: List<Job> = message.splitIntoPackages(src, dest).map {
+                            if (visualSimulationState.value) {
+                                delay(200)
+                            } else {
+                                delay(1)
+                            }
+                            launch {
+                                val key = generatePackageMapId()
+                                it.visualizationId = key
+                                var sent = false
+                                while (!sent) {
+                                    try {
+                                        val retValue = nodes.node(src).sendPackage(it, this@AppContext)
+                                        sent = true
+                                        servicePackages += retValue
+                                        infoPackages++
+                                    } catch (e: ChannelErrorException) {
+                                        infoPackages++
+                                        servicePackages++
+                                        continue
+                                    }
+                                }
+                            }
+                        }
+                        coroutines.joinAll()
                     }
                     if (message.protocol.directConnection()) {
                         // end connection
@@ -161,6 +194,7 @@ class AppContext {
                 SwingUtilities.invokeLater {
                     SendMessageResultWindow(message, infoPackages, servicePackages, time / 1_000_000)
                 }
+                this@AppContext.sendMessageButtonState.value = true
             }
         }
     }
@@ -305,10 +339,22 @@ class AppContext {
     }
 
     fun stopVisualSimulation() {
+//        sendMessageButtonState.value = true
         visualSimulationState.value = false
         playSimulationState.value = false
         virtualState.value = false
         stepCountState.value = 0
+        packagesState.values.clear()
+    }
+
+    // returns free id from packagesState.value to be used in visual simulation
+    fun generatePackageMapId(): Int {
+        val keys = packagesState.keys
+        var key = Random.nextInt()
+        while (keys.contains(key)) {
+            key = Random.nextInt()
+        }
+        return key
     }
 
     fun clear() {
@@ -322,11 +368,12 @@ class AppContext {
         selectedElementState.value = null
         infoElementState.value = null
         showInfoState.value = false
-        packageState.value = null
+        packagesState = mutableStateMapOf()
         satelliteChannelState.value = false
         visualSimulationState.value = false
         playSimulationState.value = false
         stepCountState.value = 0
         virtualState.value = false
+        sendMessageButtonState.value = true
     }
 }

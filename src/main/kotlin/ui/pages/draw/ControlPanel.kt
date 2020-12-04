@@ -93,7 +93,7 @@ fun ControlPanel(context: AppContext) {
             Spacer(modifier = Modifier
                     .width(100.dp))
             Column(verticalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.width(200.dp)) {
-                Button(onClick = { context.sendMessage() }, modifier = Modifier.fillMaxWidth(), enabled = !context.visualSimulationState.value) {
+                Button(onClick = { context.sendMessage() }, modifier = Modifier.fillMaxWidth(), enabled = context.sendMessageButtonState.value) {
                     Text(text = "Send Message")
                 }
             }

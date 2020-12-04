@@ -176,6 +176,7 @@ fun SendMessageWindow(
                             errorSourceState.value = false
                             errorDestinationState.value = false
                             context.visualSimulationState.value = false
+                            context.sendMessageButtonState.value = false
                             context.removeHighlight()
                             val message = Message(
                                     size = messageInfoState.value.messageSize,
@@ -204,6 +205,7 @@ fun SendMessageWindow(
                         else -> {
                             errorSourceState.value = false
                             errorDestinationState.value = false
+                            context.sendMessageButtonState.value = false
                             context.removeHighlight()
                             context.startVisualSimulation()
                             val message = Message(

@@ -44,7 +44,7 @@ fun DrawCanvas(context: AppContext, modifier: Modifier = Modifier) = Canvas(modi
 ) {
     context.elementsState.value.forEach { (it as DrawableElement).draw(this, context) }
     context.drawChannel(this)
-    context.packageState.value?.draw(this)
+    context.packagesState.forEach { it.value?.draw(this) }//.value?.draw(this)
 }
 
 fun AppContext.drawChannel(scope: DrawScope) {

@@ -86,7 +86,7 @@ interface ConnectableElement : Element {
      */
     fun sendPackage(pkg: Package, context: AppContext): Int {
         if (pkg.destination == id) {
-            context.packageState.value = null
+            context.packagesState[pkg.visualizationId] = null
             if (pkg.protocolType.directConnection() && pkg.type == PackageType.INFO) {
                 sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1, true), context)
                 return 1
@@ -162,14 +162,19 @@ interface ConnectableElement : Element {
         var delayFraction = delay / SIMULATION_STEPS
         val src = if (channel.el1.id == id) channel.el1.center else channel.el2.center
         val dest = if (channel.el1.id == id) channel.el2.center else channel.el1.center
+        // create drawable package for current channel using state map
+        context.packagesState[pkg.visualizationId] = DrawablePackage(src,
+                dest,
+                pkg.protocolType,
+                0f,
+                pkg.type)
         if (channel.channelType == ChannelType.DUPLEX) {
 //            println("Duplex channel, waiting for $delay")
             repeat(SIMULATION_STEPS) {
-                context.packageState.value = DrawablePackage(src,
-                        dest,
-                        pkg.protocolType,
-                        it / SIMULATION_STEPS.toFloat(),
-                        pkg.type)
+                context.packagesState[pkg.visualizationId] = context.packagesState[pkg.visualizationId]?.copy(
+                        currentFraction = it / SIMULATION_STEPS.toFloat()
+                )
+//                context.packageState.value = drawablePackage.copy(currentFraction = it / SIMULATION_STEPS.toFloat())
                 Thread.sleep(delayFraction)
             }
         } else {
@@ -177,11 +182,15 @@ interface ConnectableElement : Element {
             delay *= 2
             delayFraction = delay / SIMULATION_STEPS
             repeat(SIMULATION_STEPS) {
-                context.packageState.value = DrawablePackage(src,
-                        dest,
-                        pkg.protocolType,
-                        it / SIMULATION_STEPS.toFloat(),
-                        pkg.type)
+                context.packagesState[pkg.visualizationId] = context.packagesState[pkg.visualizationId]?.copy(
+                        currentFraction = it / SIMULATION_STEPS.toFloat()
+                )
+
+//                context.packageState.value = DrawablePackage(src,
+//                        dest,
+//                        pkg.protocolType,
+//                        it / SIMULATION_STEPS.toFloat(),
+//                        pkg.type)
                 Thread.sleep(delayFraction)
             }
         }
