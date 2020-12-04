@@ -111,15 +111,16 @@ data class ChannelInfo(
         val weight: Int,
         val type: ChannelType,
         val satellite: Boolean = false,
-        val enabled: Boolean = true
+        val enabled: Boolean = true,
+        val errorProbability: Float = 0f
 )
 
 @Composable
 fun ChannelDetailsMenu(context: AppContext) {
     val elem = context.infoElementState.value!! as ChannelElement
-    val channelInfoState = remember { mutableStateOf(ChannelInfo(elem.id, elem.weight, elem.channelType)) }
+    val channelInfoState = remember { mutableStateOf(ChannelInfo(elem.id, elem.weight, elem.channelType, elem.satellite, elem.enabled, elem.errorProbability)) }
     if (channelInfoState.value.id != elem.id) {
-        channelInfoState.value = ChannelInfo(elem.id, elem.weight, elem.channelType)
+        channelInfoState.value = ChannelInfo(elem.id, elem.weight, elem.channelType, elem.satellite, elem.enabled, elem.errorProbability)
     }
     val changedState = remember { mutableStateOf(false) }
     val choosingWeightState = remember { mutableStateOf(false) }
@@ -180,11 +181,24 @@ fun ChannelDetailsMenu(context: AppContext) {
         Spacer(Modifier
                 .fillMaxWidth()
                 .height(10.dp))
+        Column {
+            Text("Error probability: ${channelInfoState.value.errorProbability}")
+            Slider(value = channelInfoState.value.errorProbability,
+                    onValueChange = {
+                        channelInfoState.value = channelInfoState.value.copy(errorProbability = it)
+                        changedState.value = true
+                    })
+        }
+
+        Spacer(Modifier
+                .fillMaxWidth()
+                .height(10.dp))
         Button(onClick = {
             context.infoElementState.value = elem.apply {
                 weight = channelInfoState.value.weight
                 channelType = channelInfoState.value.type
                 satellite = channelInfoState.value.satellite
+                errorProbability = channelInfoState.value.errorProbability
             }
             if (channelInfoState.value.enabled) {
                 context.enableChannel(elem.id)

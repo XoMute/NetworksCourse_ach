@@ -14,6 +14,7 @@ import ui.core.*
 import ui.elements.ChannelElement
 import ui.elements.ChannelType
 import java.lang.RuntimeException
+import kotlin.random.Random
 
 interface Element {
     val id: Int
@@ -31,14 +32,14 @@ abstract class DrawableElement : Element {
     abstract val height: Int
 
     val center: Offset
-    get() {
-        return Offset(pos.x + width / 2f, pos.y + height / 2f)
-    }
+        get() {
+            return Offset(pos.x + width / 2f, pos.y + height / 2f)
+        }
 
     private val rect: Rect
-    get() {
-        return Rect(topLeft = pos, bottomRight = Offset(x = pos.x + width, y = pos.y + height))
-    }
+        get() {
+            return Rect(topLeft = pos, bottomRight = Offset(x = pos.x + width, y = pos.y + height))
+        }
 
     open fun collides(offset: Offset): Boolean {
         return rect.contains(offset)
@@ -76,10 +77,6 @@ interface ConnectableElement : Element {
     val packages: MutableState<MutableList<Package>>
     val acceptedPackages: MutableState<MutableList<Package>>
 
-    fun showRoutingTable(): String {
-        return routingTable.toString()
-    }
-
     fun toGraphNode(): Node {
         return Node(id)
     }
@@ -87,17 +84,19 @@ interface ConnectableElement : Element {
     /**
      * returns: number of service packages returned
      */
-    fun sendPackage(pkg: Package, context: AppContext): Int { // todo: implement errors
-        if (context.visualSimulationState.value) {
-            if (pkg.destination == id) {
-//                log("Accepting package $pkg")
-                context.packageState.value = null
-                if (pkg.protocolType == ProtocolType.TCP && pkg.type == PackageType.INFO) {
-                    sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1, true), context)
-                    return 1
-                }
-                return 0
+    fun sendPackage(pkg: Package, context: AppContext): Int {
+        if (pkg.destination == id) {
+            context.packageState.value = null
+            if (pkg.protocolType.directConnection() && pkg.type == PackageType.INFO) {
+                sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1, true), context)
+                return 1
             }
+            if (pkg.type == PackageType.ERROR) {
+                throw ChannelErrorException()
+            }
+            return 0
+        }
+        if (context.visualSimulationState.value) {
             while (true) {
                 if (context.playSimulationState.value) {
                     break
@@ -111,41 +110,35 @@ interface ConnectableElement : Element {
                 }
                 Thread.sleep(100)
             }
-            val nextNode = routingTable.table[pkg.destination]
-            val channel = channels.value.find {
-                it.el1.id == id && it.el2.id == nextNode?.id
-                        || it.el1.id == nextNode?.id && it.el2.id == id
-            }
-            if (nextNode == null || channel == null || !channel.el1.enabled || !channel.el2.enabled) {
-                throw RuntimeException("Can't send package from node $id to ${pkg.destination}")
-            }
+        }
+        val nextNode = routingTable.table[pkg.destination]
+        val channel = channels.value.find {
+            it.el1.id == id && it.el2.id == nextNode?.id
+                    || it.el1.id == nextNode?.id && it.el2.id == id
+        }
+        if (nextNode == null || channel == null || !channel.el1.enabled || !channel.el2.enabled) {
+            throw NoConnectionException("Can't send package from node $id to ${pkg.destination}")
+        }
+
+        if (context.visualSimulationState.value) {
+
             channel.highlightedState.value = true
-            nextNode.let {
-//                log("Sending package $pkg to ${it.id}")
+            if (pkg.protocolType.directConnection() && pkg.type == PackageType.INFO && Random.nextDouble() < channel.errorProbability) {
                 simulateVisualDelay(channel, pkg, context)
-                return it.sendPackage(pkg, context)
+                nextNode.sendPackage(Package(id, pkg.source, PackageType.ERROR, pkg.protocolType, 1, true), context)
+                return 1
             }
-        } else {
-            if (pkg.destination == id) {
-//                log("Accepting package $pkg")
-                context.packageState.value = null
-                if (pkg.protocolType == ProtocolType.TCP && pkg.type == PackageType.INFO) {
-                    sendPackage(Package(id, pkg.source, PackageType.SERVICE, pkg.protocolType, 1, true), context)
-                    return 1
-                }
-                return 0
-            }
-            val nextNode = routingTable.table[pkg.destination]
-            val channel = channels.value.find {
-                it.el1.id == id && it.el2.id == nextNode?.id
-                        || it.el1.id == nextNode?.id && it.el2.id == id
-            }
-            if (nextNode == null || channel == null) {
-                throw RuntimeException("Can't send package from node $id to ${pkg.destination}")
-            }
-            channel.highlightedState.value = true
-            nextNode.let {
 //                log("Sending package $pkg to ${it.id}")
+            simulateVisualDelay(channel, pkg, context)
+            return nextNode.sendPackage(pkg, context)
+        } else {
+            channel.highlightedState.value = true
+            if (pkg.protocolType.directConnection() && pkg.type == PackageType.INFO && Random.nextDouble() < channel.errorProbability) {
+                simulateDelay(channel)
+                nextNode.sendPackage(Package(id, pkg.source, PackageType.ERROR, pkg.protocolType, 1, true), context)
+                return 1
+            }
+            nextNode.let {
                 simulateDelay(channel)
                 return it.sendPackage(pkg, context)
             }
@@ -194,6 +187,9 @@ interface ConnectableElement : Element {
         }
     }
 }
+
+class NoConnectionException(val msg: String) : RuntimeException(msg)
+class ChannelErrorException : RuntimeException()
 
 fun ConnectableElement.log(message: String) {
     println("Node $id: $message")

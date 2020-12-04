@@ -24,7 +24,7 @@ data class DrawablePackage(
 ) {
     fun draw(scope: DrawScope) {
         val lerp = lerp(start, end, currentFraction)
-        val color = lazy { if (type == PackageType.INFO) Color.Blue else Color.Yellow }
+        val color = lazy { if (type == PackageType.ERROR) Color.Red else if (type == PackageType.INFO) Color.Blue else Color.Yellow }
         scope.drawCircle(color = color.value,
                 radius = 10f,
                 center = lerp)
@@ -36,5 +36,5 @@ data class DrawablePackage(
 }
 
 enum class PackageType {
-    INFO, SERVICE, ROUTING
+    INFO, SERVICE, ERROR
 }

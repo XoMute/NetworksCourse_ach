@@ -3,19 +3,13 @@ package ui.core
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
-import core.DrawablePackage
-import core.Graph
-import core.Message
-import core.ProtocolType
+import core.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import ui.elements.CommunicationNodeElement
 import ui.elements.ChannelElement
 import ui.elements.WorkstationElement
-import ui.elements.base.ConnectableElement
-import ui.elements.base.DrawableElement
-import ui.elements.base.Element
-import ui.elements.base.ElementType
+import ui.elements.base.*
 import ui.pages.draw.windows.*
 import java.lang.RuntimeException
 import javax.swing.SwingUtilities
@@ -124,13 +118,36 @@ class AppContext {
             GlobalScope.launch {
                 val startTime = System.nanoTime()
                 println("Sending message $message from $src to $dest")
-                // todo: if tcp - handshake (+ 2 service packages)
                 try {
-                    message.splitIntoPackages(src, dest).forEach {
-                        servicePackages += nodes.node(src).sendPackage(it, this@AppContext)
-                        infoPackages++
+                    if (message.protocol.directConnection()) {
+                        // handshake
+                        nodes.node(src).sendPackage(Package(src, dest, PackageType.SERVICE, message.protocol, message.servicePackageSize), this@AppContext)
+                        nodes.node(dest).sendPackage(Package(dest, src, PackageType.SERVICE, message.protocol, message.servicePackageSize), this@AppContext)
+                        servicePackages += 2
                     }
-                } catch (e: RuntimeException) {
+
+                    message.splitIntoPackages(src, dest).forEach {
+                        var sent = false
+                        while (!sent) {
+                            try {
+                                val retValue = nodes.node(src).sendPackage(it, this@AppContext)
+                                sent = true
+                                servicePackages += retValue
+                                infoPackages++
+                            } catch (e: ChannelErrorException) {
+                                infoPackages++
+                                servicePackages++
+                                continue
+                            }
+                        }
+                    }
+                    if (message.protocol.directConnection()) {
+                        // end connection
+                        nodes.node(src).sendPackage(Package(src, dest, PackageType.SERVICE, message.protocol, message.servicePackageSize), this@AppContext)
+                        nodes.node(dest).sendPackage(Package(dest, src, PackageType.SERVICE, message.protocol, message.servicePackageSize), this@AppContext)
+                        servicePackages += 2
+                    }
+                } catch (e: NoConnectionException) {
                     SwingUtilities.invokeLater {
                         SendMessageErrorWindow("Can't send message from $src to $dest: ${e.message}")
                     }

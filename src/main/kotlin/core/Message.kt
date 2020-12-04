@@ -23,3 +23,7 @@ data class Message(
 enum class ProtocolType {
     TCP, UDP, VIRTUAL
 }
+
+fun ProtocolType.directConnection(): Boolean {
+    return this == ProtocolType.TCP || this == ProtocolType.VIRTUAL
+}
