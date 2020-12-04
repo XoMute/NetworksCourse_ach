@@ -32,33 +32,50 @@ fun SendMessageResultWindow(
 
     window.show {
         MaterialTheme(colors = colors) {
-            Row(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1/3f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Info packages", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
-                    TextBox(infoPackages.toString())
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+
+                Row(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 3f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Message size", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
+                        TextBox(message.size.toString())
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 3f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Package size", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
+                        TextBox(message.packageSize.toString())
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 3f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Protocol", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
+                        TextBox(message.protocol.toString())
+                    }
                 }
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1/3f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Service packages", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
-                    TextBox(servicePackages.toString())
-                }
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1/3f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Time (ms)", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
-                    TextBox(time.toString())
+                Row(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 3f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Info packages", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
+                        TextBox(infoPackages.toString())
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 3f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Service packages", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
+                        TextBox(servicePackages.toString())
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).weight(1 / 3f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Time (ms)", modifier = Modifier.border(BorderStroke(1.dp, Color.Black)).fillMaxWidth(), textAlign = TextAlign.Center)
+                        TextBox(time.toString())
+                    }
                 }
             }
         }
     }
+}
+
+fun SendMessageErrorWindow(
+        message: String
+) {
+    val window = AppWindow(size = IntSize(600, 300))
+
+    window.show {
+        MaterialTheme(colors = colors) {
+            Text(message)
+        }
+    }
 
 }
-//
-//@Composable
-//fun TextBox(text: String = "") {
-//    Box(
-//            modifier = Modifier.height(32.dp)
-//                    .width(100.dp)
-//                    .padding(start = 2.dp),
-//            contentAlignment = Alignment.CenterStart
-//    ) {
-//        Text(text = text)
-//    }
-//}

@@ -16,10 +16,8 @@ import ui.elements.base.ConnectableElement
 import ui.elements.base.DrawableElement
 import ui.elements.base.Element
 import ui.elements.base.ElementType
-import ui.pages.draw.windows.DumpGraphWindow
-import ui.pages.draw.windows.LoadGraphWindow
-import ui.pages.draw.windows.SendMessageResultWindow
-import ui.pages.draw.windows.SendMessageWindow
+import ui.pages.draw.windows.*
+import java.lang.RuntimeException
 import javax.swing.SwingUtilities
 
 const val CHANNEL_DELAY = 10 // in nanoseconds
@@ -78,7 +76,7 @@ class AppContext {
                     } else {
                         startConnection(el as ConnectableElement)
                     }
-                } else return
+                }
             }
             infoElementState.value?.let {
                 if (infoElementState.value != null
@@ -127,14 +125,21 @@ class AppContext {
                 val startTime = System.nanoTime()
                 println("Sending message $message from $src to $dest")
                 // todo: if tcp - handshake (+ 2 service packages)
-                message.splitIntoPackages(src, dest).forEach {
-                    servicePackages += nodes.node(src).sendPackage(it, this@AppContext)
-                    infoPackages++
+                try {
+                    message.splitIntoPackages(src, dest).forEach {
+                        servicePackages += nodes.node(src).sendPackage(it, this@AppContext)
+                        infoPackages++
+                    }
+                } catch (e: RuntimeException) {
+                    SwingUtilities.invokeLater {
+                        SendMessageErrorWindow("Can't send message from $src to $dest: ${e.message}")
+                    }
+                    stopVisualSimulation()
+                    return@launch
                 }
+
                 val endTime = System.nanoTime()
                 time = (endTime - startTime)
-                // todo: show new window with metrics
-                println("Result:\nInfo packages sent: $infoPackages, service packages sent: $servicePackages, time: $time ns")
                 stopVisualSimulation()
                 SwingUtilities.invokeLater {
                     SendMessageResultWindow(message, infoPackages, servicePackages, time / 1_000_000)
@@ -144,7 +149,7 @@ class AppContext {
     }
 
     fun showRoutingTable() {
-        println((infoElementState.value as ConnectableElement).showRoutingTable())
+        RoutingTableWindow(this)
     }
 
     private fun startConnection(elem: ConnectableElement) {
@@ -175,11 +180,12 @@ class AppContext {
             return
         }
         val connectableElems: List<ConnectableElement> = elementsState.value.filterIsInstance<ConnectableElement>()
+        connectableElems.forEach { it.routingTable.clear() }
         connectableElems
                 .filter { it.channels.value.isNotEmpty() } // todo: calculate only for connected and active nodes
                 .map { x ->
-                    if (!x.enabled) {
-                        x.routingTable.clear(x.id, this)
+                    if (!x.enabled) { // todo: try to move that check to filter
+                        x.routingTable.clear()
                         return@map
                     }
                     graph.calculateShortestPathFromSource(x.id)
@@ -199,20 +205,19 @@ class AppContext {
     }
 
     fun disableNode(id: Int) {
-        val node = elementsState.value.find { it.id == id }!! as ConnectableElement
-        node.enabled = false
+        elementsState.value.filterIsInstance<ConnectableElement>().find { it.id == id }!!.enabled = false
         graph.disableNode(id)
         updateRouteTables()
     }
 
     fun enableNode(id: Int) {
-        elementsState.value.find {it.id == id}!!.enabled = true
+        elementsState.value.filterIsInstance<ConnectableElement>().find { it.id == id }!!.enabled = true
         graph.enableNode(id)
         updateRouteTables()
     }
 
     fun deleteNode(id: Int) {
-        val node = elementsState.value.find {it.id == id}!!
+        val node = elementsState.value.filterIsInstance<ConnectableElement>().find { it.id == id }!!
         elementsState.value.filterIsInstance<ChannelElement>().forEach { ch ->
             if (ch.el1.id == id || ch.el2.id == id) {
                 elementsState.value.removeIf { it == ch }
@@ -224,8 +229,29 @@ class AppContext {
         updateRouteTables()
     }
 
+    fun disableChannel(id: Int) {
+        val channel = elementsState.value.filterIsInstance<ChannelElement>().find { it.id == id }!!
+        channel.enabled = false
+        graph.deleteLink(channel.el1.id, channel.el2.id)
+        updateRouteTables()
+    }
+
+    fun enableChannel(id: Int) {
+        val channel = elementsState.value.filterIsInstance<ChannelElement>().find { it.id == id }!!
+        channel.enabled = true
+        graph.addLink(channel.el1.id, channel.el2.id, channel.weight)
+        updateRouteTables()
+    }
+
+    fun deleteChannel(channel: ChannelElement) {
+        elementsState.value.remove(channel)
+        graph.deleteLink(channel.el1.id, channel.el2.id)
+        stopShowingInfo()
+        updateRouteTables()
+    }
+
     private fun List<ConnectableElement>.node(id: Int): ConnectableElement {
-        return find { it.id == id }!!
+        return filterIsInstance<ConnectableElement>().find { it.id == id }!!
     }
 
     private fun dropConnection() {

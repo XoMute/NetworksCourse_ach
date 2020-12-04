@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.imageFromResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ui.core.AppContext
 import ui.core.CHANNEL_WEIGHTS
@@ -49,15 +50,16 @@ fun ControlPanel(context: AppContext) {
             Spacer(modifier = Modifier
                     .width(10.dp))
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(text = "Line weight:",
+                Text(text = "Channel weight:",
                         color = Color.Black,
                         modifier = Modifier.height(20.dp))
                 DropdownMenu(
-                        toggleModifier = Modifier.width(100.dp),
+                        toggleModifier = Modifier.width(120.dp),
                         toggle = {
-                            Text(text = context.channelWeightState.value, modifier = Modifier
-                                    .clickable { chosingWeightState.value = true }
-                                    .fillMaxWidth())
+                            Row(Modifier.clickable { chosingWeightState.value = true }) {
+                                Text(text = context.channelWeightState.value, modifier = Modifier)
+                                Icon(imageFromResource("arrowdown.png"))
+                            }
                         },
                         expanded = chosingWeightState.value,
                         onDismissRequest = { chosingWeightState.value = false }

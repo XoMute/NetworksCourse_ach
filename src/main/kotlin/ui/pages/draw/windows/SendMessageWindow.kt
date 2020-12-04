@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.imageFromResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -53,9 +54,10 @@ fun SendMessageWindow(
                                 modifier = Modifier.width(180.dp))
                         DropdownMenu(
                                 toggle = {
-                                    Text(text = messageInfoState.value.fromNode?.id?.toString()
-                                            ?: "Select station", modifier = Modifier
-                                            .clickable { sourceNodeState.value = true })
+                                    Row(Modifier.clickable { sourceNodeState.value = true }) {
+                                        Text(text = messageInfoState.value.fromNode?.id?.toString() ?: "Select station")
+                                        Icon(imageFromResource("arrowdown.png"))
+                                    }
                                 },
                                 expanded = sourceNodeState.value,
                                 onDismissRequest = { sourceNodeState.value = false }
@@ -79,9 +81,10 @@ fun SendMessageWindow(
                                 modifier = Modifier.width(180.dp))
                         DropdownMenu(
                                 toggle = {
-                                    Text(text = messageInfoState.value.toNode?.id?.toString()
-                                            ?: "Select station", modifier = Modifier
-                                            .clickable { destinationNodeState.value = true })
+                                    Row(Modifier.clickable { destinationNodeState.value = true }) {
+                                        Text(text = messageInfoState.value.toNode?.id?.toString() ?: "Select station")
+                                        Icon(imageFromResource("arrowdown.png"))
+                                    }
                                 },
                                 expanded = destinationNodeState.value,
                                 onDismissRequest = { destinationNodeState.value = false }

@@ -87,9 +87,9 @@ class Graph {
         nodes.find { it.id == id }!!.enabled = false
         val node = nodes.find { it.id == id }!!
         node.enabled = false
-        node.adjacentNodes.forEach {
-            it.key.adjacentNodes.remove(node)
-        }
+//        node.adjacentNodes.forEach {
+//            it.key.adjacentNodes.remove(node)
+//        }
     }
 
     fun enableNode(id: Int) {
@@ -102,6 +102,13 @@ class Graph {
             it.key.adjacentNodes.remove(node)
         }
         nodes.removeIf { it.id == id }
+    }
+
+    fun deleteLink(id1: Int, id2: Int) {
+        val node1 = nodes.find { it.id == id1 }!!
+        val node2 = nodes.find { it.id == id2 }!!
+        node1.adjacentNodes.remove(node2)
+        node2.adjacentNodes.remove(node1)
     }
 }
 

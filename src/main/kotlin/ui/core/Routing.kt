@@ -17,7 +17,7 @@ class RoutingTable {
         return table.toString()
     }
 
-    fun clear(id: Int, context: AppContext) {
+    fun clear() {
 //        table.keys.forEach { key ->
 //            (context.elementsState.value.find { it.id == key }!! as ConnectableElement).routingTable.table.remove(id)
 //        }

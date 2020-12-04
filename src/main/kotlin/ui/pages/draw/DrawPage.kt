@@ -25,8 +25,7 @@ fun DrawPage(context: AppContext) = Row {
             if (context.showInfoState.value) {
                 when (context.infoElementState.value!!.type) {
                     ElementType.CHANNEL -> ChannelDetailsMenu(context)
-                    ElementType.WORKSTATION -> WorkstationDetailsMenu(context)
-                    ElementType.COMMUNICATION_NODE -> RouterDetailsMenu(context)
+                    else -> ConnectableElementMenu(context)
                 }
             }
         }

@@ -29,7 +29,7 @@ data class DrawablePackage(
                 radius = 10f,
                 center = lerp)
         scope.drawCircle(color = Color.Black,
-                radius = 12f,
+                radius = 11f,
                 center = lerp,
                 style = Stroke(2f))
     }

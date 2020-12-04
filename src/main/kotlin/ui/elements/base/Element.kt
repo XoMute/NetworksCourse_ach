@@ -13,6 +13,7 @@ import org.jetbrains.skija.Typeface
 import ui.core.*
 import ui.elements.ChannelElement
 import ui.elements.ChannelType
+import java.lang.RuntimeException
 
 interface Element {
     val id: Int
@@ -116,8 +117,7 @@ interface ConnectableElement : Element {
                         || it.el1.id == nextNode?.id && it.el2.id == id
             }
             if (nextNode == null || channel == null || !channel.el1.enabled || !channel.el2.enabled) {
-                log("Can't send package from node $id to ${pkg.destination}") // todo: stop simulation
-                return 0
+                throw RuntimeException("Can't send package from node $id to ${pkg.destination}")
             }
             channel.highlightedState.value = true
             nextNode.let {
@@ -141,8 +141,7 @@ interface ConnectableElement : Element {
                         || it.el1.id == nextNode?.id && it.el2.id == id
             }
             if (nextNode == null || channel == null) {
-                log("Can't send package from node $id to ${pkg.destination}") // todo: stop simulation
-                return 0
+                throw RuntimeException("Can't send package from node $id to ${pkg.destination}")
             }
             channel.highlightedState.value = true
             nextNode.let {

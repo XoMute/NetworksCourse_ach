@@ -24,7 +24,7 @@ class ChannelElement(
         var channelType: ChannelType = ChannelType.DUPLEX,
         var weight: Int = 1,
         var errorProbability: Float = 0f,
-        val satellite: Boolean = false
+        var satellite: Boolean = false
 ) : DrawableElement() {
     override var pos: Offset = Offset.Zero //todo: change
     override var enabled: Boolean = true
@@ -56,7 +56,7 @@ class ChannelElement(
     private fun sqr(x: Float): Float = x * x
 
     override fun draw(scope: DrawScope, context: AppContext) {
-        scope.drawLine(if (highlightedState.value) Color.Red else if (satellite) Color.Blue else Color.Black, el1.center, el2.center, 3f)
+        scope.drawLine(if (!enabled) Color.LightGray else if (highlightedState.value) Color.Red else if (satellite) Color.Blue else Color.Black, el1.center, el2.center, 3f)
         scope.drawIntoCanvas { canvas ->
             (canvas as DesktopCanvas).skija.drawString(weight.toString(),
                     abs((el1.center.x + el2.center.x) / 2f),
