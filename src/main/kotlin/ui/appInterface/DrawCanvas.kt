@@ -1,10 +1,8 @@
-package ui.pages.draw
+package ui.appInterface
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -14,7 +12,6 @@ import androidx.compose.ui.gesture.tapGestureFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerMoveFilter
-import androidx.compose.ui.layout.WithConstraints
 import ui.core.AppContext
 import ui.elements.base.DrawableElement
 import ui.elements.base.ElementType

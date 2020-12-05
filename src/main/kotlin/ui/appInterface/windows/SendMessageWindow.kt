@@ -1,4 +1,4 @@
-package ui.pages.draw.windows
+package ui.appInterface.windows
 
 import androidx.compose.desktop.AppWindow
 import androidx.compose.foundation.clickable
@@ -15,10 +15,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import colors
-import core.Message
-import core.ProtocolType
+import routing.Message
+import routing.ProtocolType
 import ui.core.AppContext
-import ui.elements.ChannelElement
 import ui.elements.WorkstationElement
 import ui.elements.base.ConnectableElement
 

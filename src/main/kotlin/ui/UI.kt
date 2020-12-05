@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import ui.core.AppContext
-import ui.pages.draw.DrawPage
+import ui.appInterface.DrawPage
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

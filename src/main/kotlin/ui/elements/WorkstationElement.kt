@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.imageFromResource
-import core.Package
+import routing.Package
 import serialization.Element
 import ui.core.AppContext
 import ui.core.RoutingTable

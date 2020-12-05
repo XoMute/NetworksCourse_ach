@@ -1,4 +1,4 @@
-package ui.pages.draw
+package ui.appInterface
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,12 +13,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.imageFromResource
 import androidx.compose.ui.unit.dp
-import core.ProtocolType
 import ui.core.AppContext
 import ui.core.CHANNEL_WEIGHTS
 import ui.elements.ChannelElement
 import ui.elements.ChannelType
-import ui.pages.draw.windows.TextBox
+import ui.appInterface.windows.TextBox
 
 data class NodeInfo(
         val id: Int,

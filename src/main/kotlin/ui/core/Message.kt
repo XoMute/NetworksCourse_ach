@@ -1,4 +1,4 @@
-package core
+package routing
 
 data class Message(
         val size: Int,

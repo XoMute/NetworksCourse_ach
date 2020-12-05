@@ -1,4 +1,4 @@
-package core
+package routing
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.lerp

@@ -1,4 +1,4 @@
-package core
+package routing
 
 import ui.elements.base.ConnectableElement
 import java.util.*
@@ -87,9 +87,6 @@ class Graph {
         nodes.find { it.id == id }!!.enabled = false
         val node = nodes.find { it.id == id }!!
         node.enabled = false
-//        node.adjacentNodes.forEach {
-//            it.key.adjacentNodes.remove(node)
-//        }
     }
 
     fun enableNode(id: Int) {

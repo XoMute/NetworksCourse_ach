@@ -1,4 +1,4 @@
-package ui.pages.draw
+package ui.appInterface
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

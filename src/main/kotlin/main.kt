@@ -14,7 +14,7 @@ val colors = lightColors(
 )
 
 fun main() {
-    Window(title = "Course_ach", size = IntSize(1600, 900)) {
+    Window(title = "NetworkModelling", size = IntSize(1600, 900)) {
         MaterialTheme(colors = colors, typography = Typography()) {
             MainUI()
         }

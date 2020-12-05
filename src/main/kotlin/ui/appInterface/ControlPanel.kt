@@ -1,4 +1,4 @@
-package ui.pages.draw
+package ui.appInterface
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.imageFromResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ui.core.AppContext
 import ui.core.CHANNEL_WEIGHTS

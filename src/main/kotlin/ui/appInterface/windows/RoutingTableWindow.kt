@@ -1,4 +1,4 @@
-package ui.pages.draw.windows
+package ui.appInterface.windows
 
 import androidx.compose.desktop.AppWindow
 import androidx.compose.foundation.*
@@ -29,7 +29,7 @@ fun RoutingTableWindow(context: AppContext) {
                             scrollState = stateVertical
                     ) {
                         ScrollableRow(scrollState = stateHorizontal) {
-                            val node = context.infoElementState.value!! as ConnectableElement
+                            val node = context.infoElementState.value as? ConnectableElement ?: return@ScrollableRow
                             val table = node.routingTable.table
                             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                                 println(table)

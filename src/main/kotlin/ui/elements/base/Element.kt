@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.unit.IntOffset
-import core.*
+import routing.*
 import org.jetbrains.skija.Font
 import org.jetbrains.skija.Typeface
 import ui.core.*
@@ -128,7 +128,6 @@ interface ConnectableElement : Element {
                 nextNode.sendPackage(Package(id, pkg.source, PackageType.ERROR, pkg.protocolType, 1, true), context)
                 return 1
             }
-//                log("Sending package $pkg to ${it.id}")
             simulateVisualDelay(channel, pkg, context)
             return nextNode.sendPackage(pkg, context)
         } else {
@@ -148,10 +147,8 @@ interface ConnectableElement : Element {
     private fun simulateDelay(channel: ChannelElement) {
         var delay = CHANNEL_DELAY + channel.weight
         if (channel.channelType == ChannelType.DUPLEX) {
-//            println("Duplex channel, waiting for $delay")
             Thread.sleep(0L, delay)
         } else {
-//            println("Half duplex channel, waiting for ${delay * 2}")
             delay *= 2
             Thread.sleep(0L, delay)
         }
@@ -169,28 +166,19 @@ interface ConnectableElement : Element {
                 0f,
                 pkg.type)
         if (channel.channelType == ChannelType.DUPLEX) {
-//            println("Duplex channel, waiting for $delay")
             repeat(SIMULATION_STEPS) {
                 context.packagesState[pkg.visualizationId] = context.packagesState[pkg.visualizationId]?.copy(
                         currentFraction = it / SIMULATION_STEPS.toFloat()
                 )
-//                context.packageState.value = drawablePackage.copy(currentFraction = it / SIMULATION_STEPS.toFloat())
                 Thread.sleep(delayFraction)
             }
         } else {
-//            println("Half duplex channel, waiting for ${delay * 2}")
             delay *= 2
             delayFraction = delay / SIMULATION_STEPS
             repeat(SIMULATION_STEPS) {
                 context.packagesState[pkg.visualizationId] = context.packagesState[pkg.visualizationId]?.copy(
                         currentFraction = it / SIMULATION_STEPS.toFloat()
                 )
-
-//                context.packageState.value = DrawablePackage(src,
-//                        dest,
-//                        pkg.protocolType,
-//                        it / SIMULATION_STEPS.toFloat(),
-//                        pkg.type)
                 Thread.sleep(delayFraction)
             }
         }

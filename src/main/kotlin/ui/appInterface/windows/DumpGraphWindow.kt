@@ -1,4 +1,4 @@
-package ui.pages.draw.windows
+package ui.appInterface.windows
 
 import androidx.compose.desktop.AppWindow
 import androidx.compose.foundation.layout.*
@@ -16,7 +16,6 @@ import com.google.gson.GsonBuilder
 import ui.elements.ChannelElement
 import ui.elements.CommunicationNodeElement
 import ui.elements.WorkstationElement
-import ui.elements.base.ConnectableElement
 import ui.elements.base.Element
 import java.io.File
 import java.io.FileWriter

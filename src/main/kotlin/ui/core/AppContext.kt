@@ -5,13 +5,13 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.geometry.Offset
-import core.*
+import routing.*
 import kotlinx.coroutines.*
 import ui.elements.CommunicationNodeElement
 import ui.elements.ChannelElement
 import ui.elements.WorkstationElement
 import ui.elements.base.*
-import ui.pages.draw.windows.*
+import ui.appInterface.windows.*
 import javax.swing.SwingUtilities
 import kotlin.random.Random
 
@@ -152,7 +152,7 @@ class AppContext {
                             if (visualSimulationState.value) {
                                 delay(200)
                             } else {
-                                delay(1)
+                                delay(5)
                             }
                             launch {
                                 val key = generatePackageMapId()
